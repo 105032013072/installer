@@ -1,0 +1,582 @@
+proc save {} {
+
+  #--------------------------------------------------------------------
+  # set up globals
+  #--------------------------------------------------------------------
+
+  global AdminConfig
+
+  #--------------------------------------------------------------------
+  # Save all the changes
+  #--------------------------------------------------------------------
+
+  puts "Config: Save the configuration"
+
+  $AdminConfig save
+
+}
+
+proc setjms {nodeName serverName appName clusterName cellName} {
+    
+    set bus_name eos_jms_bus
+
+	set invoke_jms_queue ${appName}.EOS_INVOKE_QUEUE
+	set invoke_jms_queue_jndi ${appName}/EOS_INVOKE_QUEUE
+	set result_jms_queue $appName.EOS_RESULT_QUEUE
+	set result_jms_queue_jndi $appName/EOS_RESULT_QUEUE
+
+	set invoke_jms_act ${appName}.EOSMessageQueueAct_Invoke
+	set invoke_jms_act_jndi ${appName}/EOSMessageQueueAct_Invoke
+	set result_jms_act ${appName}.EOSMessageQueueAct_Result
+	set result_jms_act_jndi ${appName}/EOSMessageQueueAct_Result
+
+	global AdminConfig
+	set node_optArgs [list $nodeName $serverName]
+	#set scope [$AdminConfig getid "/Node:${nodeName}/Server:${serverName}/"]
+	set scope [$AdminConfig getid "/Cell:$cellName/ServerCluster:$clusterName"]
+ 	puts "create websphere bus:${bus_name} for eos jms..."
+
+	createJMSQueue $invoke_jms_queue $bus_name $invoke_jms_queue_jndi "${clusterName}_${appName}/EOSJMSQueue_Invoke" Application $scope
+    createJMSQueue $result_jms_queue $bus_name $result_jms_queue_jndi "${clusterName}_${appName}/EOSJMSQueue_Result" Application $scope
+
+	puts "create eos jms queue and topic Activation Spec..."
+	createMDBActivationSpec $invoke_jms_act $invoke_jms_act_jndi $bus_name $invoke_jms_queue_jndi javax.jms.Queue $scope
+	createMDBActivationSpec $result_jms_act $result_jms_act_jndi $bus_name $result_jms_queue_jndi javax.jms.Queue $scope
+
+	puts "@!Script Executed Succeed!@"
+}
+
+#-----------------------------------------------------------------
+# createMDBActivationSpec - Create a new MDB Activation Spec if one
+#            with the same name does not exist at the specified
+#            scope. Otherwise, return the existing Activation Spec.
+#-----------------------------------------------------------------
+proc createMDBActivationSpec {mdbName jndiName SIBus JMSDestJndi destType scope} {
+   #    mdbName     - MDB name
+   #    jndiName    - activation spec jndi name
+   #    SIBus       - SIBus name
+   #    JMSDestJndi - JMS destination JNDI name
+   #    destType    - destination type
+   #    scope       - scope
+
+   global AdminTask
+
+   puts " "
+   puts "Creating MDB Activation Spec ${mdbName}..."
+
+   # Check if the activation spec already exists
+
+   set asList [$AdminTask listSIBJMSActivationSpecs $scope]
+   foreach item $asList {
+      if {[string first $mdbName $item] >= 0} {
+         set mdb $item
+         break
+      }
+   }
+
+   if {![info exists mdb]} {
+      puts "  MDB Activation Spec Name:   ${mdbName}"
+      puts "  JNDI Name:                  ${jndiName}"
+      puts "  JMS Destination JNDI Name:  ${JMSDestJndi}"
+      puts "  Destination Type:           ${destType}"
+
+      set params [list -name $mdbName -jndiName $jndiName -busName $SIBus -destinationJndiName $JMSDestJndi -destinationType $destType]
+      if {[catch {set mdb [$AdminTask createSIBJMSActivationSpec $scope $params]} result]} {
+         puts "WSADMIN EXCEPTION: ${result}"
+         puts "Terminating due to exception!"
+         exit
+      } else {
+         puts "${mdbName} created successfully!"
+      }
+   } else {
+      puts "$mdbName already exists!"
+   }
+
+   return $mdb
+}
+
+
+#-----------------------------------------------------------------
+# createJMSQueue - Create a new JMS Queue if one with the same
+#            name does not exist at the specified scope. Otherwise,
+#            return the existing JMS Queue.
+#-----------------------------------------------------------------
+proc createJMSQueue {qName busName jndiName SIBDest delMode scope} {
+   #    busName  - jms bus name
+   #    qName    - queue name
+   #    jndiName - queue jndi name
+   #    SIBDest  - SIB destination
+   #    delMode  - delivery mode
+   #    scope    - scope
+
+   global AdminTask
+
+   puts " "
+   puts "Creating JMS Queue ${qName}..."
+
+   # Check if the queue already exists
+
+   set qList [$AdminTask listSIBJMSQueues $scope]
+   foreach item $qList {
+      if {[string first $qName $item] >= 0} {
+         set queue $item
+         break
+      }
+   }
+
+   if {![info exists queue]} {
+      puts "  Bus Name:         ${busName}"
+      puts "  Queue Name:       ${qName}"
+      puts "  JNDI Name:        ${jndiName}"
+      puts "  SIB Destination:  ${SIBDest}"
+      puts "  Delivery Mode:    ${delMode}"
+
+      set params [list -busName $busName -name $qName -jndiName $jndiName -queueName $SIBDest -deliveryMode $delMode]
+      if {[catch {set queue [$AdminTask createSIBJMSQueue $scope $params]} result]} {
+         puts "WSADMIN EXCEPTION: ${result}"
+         puts "Terminating due to exception!"
+         exit
+      } else {
+         puts "${qName} created successfully!"
+      }
+   } else {
+      puts "$qName already exists!"
+   }
+
+   return $queue
+}
+
+
+#-----------------------------------------------------------------
+# createJMSTopic - Create a new JMS Topic if one with the same
+#            name does not exist at the specified scope. Otherwise,
+#            return the existing JMS Topic.
+#-----------------------------------------------------------------
+proc createJMSTopic {tName jndiName tSpace delMode scope} {
+   #    tName    - topic name
+   #    jndiName - topic jndi name
+   #    tSpace   - topic space
+   #    delMode  - delivery mode
+   #    scope    - scope
+
+   global AdminTask
+
+   puts " "
+   puts "Creating JMS Topic ${tName}..."
+
+   # Check if the topic already exists
+
+   set tList [$AdminTask listSIBJMSTopics $scope]
+   foreach item $tList {
+      if {[string first $tName $item] >= 0} {
+         set topic $item
+         break
+      }
+   }
+
+   if {![info exists topic]} {
+      puts "  Topic Name:     ${tName}"
+      puts "  JNDI Name:      ${jndiName}"
+      puts "  Topic Space:    ${tSpace}"
+      puts "  Delivery Mode:  ${delMode}"
+
+      set params [list -name $tName -jndiName $jndiName -topicName $tName -topicSpace $tSpace -deliveryMode $delMode]
+      if {[catch {set topic [$AdminTask createSIBJMSTopic $scope $params]} result]} {
+         puts "WSADMIN EXCEPTION: ${result}"
+         puts "Terminating due to exception!"
+         exit
+      } else {
+         puts "${tName} created successfully!"
+      }
+   } else {
+      puts "$tName already exists!"
+   }
+
+   return $topic
+}
+
+
+#-----------------------------------------------------------------
+# createJMSConnectionFactory - Create a new JMS Connection Factory
+#            if one with the same name does not exist on the SIBus.
+#            Otherwise, return the existing Connection Factory.
+#-----------------------------------------------------------------
+proc createJMSConnectionFactory {SIBus cfName cfType jndiName scope} {
+   # Create JMS Connection Factory
+   #    SIBus    - SIBus name
+   #    cfName   - connection factory name
+   #    cfType   - connection factory type
+   #    jndiName - connection factory jndi name
+   #    scope    - scope
+
+   global AdminTask
+
+   puts " "
+   puts "Creating JMS ${cfType} Connection Factory ${cfName}..."
+
+   # Check if the connection factory already exists
+
+   set parms [list -type $cfType]
+   set cfList [$AdminTask listSIBJMSConnectionFactories $scope $parms]
+
+   foreach item $cfList {
+      if {[string first $cfName $item] >= 0} {
+         set connectionFactory $item
+         break
+      }
+   }
+
+   if {![info exists connectionFactory]} {
+      puts "  Connection Factory Name:  ${cfName}"
+      puts "  Connection Factory Type:  ${cfType}"
+      puts "  JNDI Name:                ${jndiName}"
+
+      set params [list -name $cfName -jndiName $jndiName -busName $SIBus -type $cfType]
+      if {[catch {set connectionFactory [$AdminTask createSIBJMSConnectionFactory $scope $params]} result]} {
+         puts "WSADMIN EXCEPTION: ${result}"
+         puts "Terminating due to exception!"
+         exit
+      } else {
+         puts "${cfName} created successfully!"
+      }
+   } else {
+      puts "$cfName already exists!"
+   }
+
+   return $connectionFactory
+}
+
+#-----------------------------------------------------------------
+# createSIBDestination - Create a new SIB Destination if one with the same
+#            name does not exist on the specified SIBus. Otherwise,
+#            return the existing Destination.
+#-----------------------------------------------------------------
+proc createSIBDestination {SIBus destName destType reliability optArgs} {
+   #    SIBus       - SIBus name
+   #    destName    - destination name
+   #    destType    - destination type
+   #    reliability - reliability
+   #    optArgs[0]  - cluster name or node name
+   #    optArgs[1]  - server name
+
+   global AdminTask
+   global AdminConfig
+
+   if {[llength $optArgs] == 1} {
+      set clusterName [lindex $optArgs 0]
+   } else {
+      set nodeName    [lindex $optArgs 0]
+      set serverName  [lindex $optArgs 1]
+   }
+
+   puts " "
+   puts "Creating SIB Destination ${destName}..."
+
+   # Check if the SIB Destination already exists
+
+   set parms [list -bus $SIBus]
+   set destList [$AdminTask listSIBDestinations $parms]
+
+   foreach item $destList {
+      set ident [$AdminConfig showAttribute $item identifier]
+      if {$ident == $destName} {
+         set dest $item
+         break
+      }
+   }
+
+   if {![info exists dest]} {
+      puts "  Destination Name:  ${destName}"
+      puts "  Destination Type:  ${destType}"
+      puts "  Reliability:       ${reliability}"
+      if {${destType} == "Queue"} {
+         if {[llength $optArgs] == 1} {
+            puts "  Cluster Name:      ${clusterName}"
+         } else {
+            puts "  Node Name:         ${nodeName}"
+            puts "  Server Name:       ${serverName}"
+         }
+      }
+
+      set parms [list -bus $SIBus -name $destName -type $destType -reliability $reliability]
+      if {$destType == "Queue" && [llength $optArgs] == 1} {
+         lappend parms -cluster $clusterName
+      } elseif {$destType == "Queue"} {
+         lappend parms -node $nodeName -server $serverName
+      }
+
+      if {[catch {set dest [$AdminTask createSIBDestination $parms]} result]} {
+         puts "WSADMIN EXCEPTION: ${result}"
+         puts "Terminating due to exception!"
+         exit
+      } else {
+         puts "${destName} created successfully!"
+      }
+   } else {
+      puts "$destName already exists!"
+   }
+
+   return $dest
+}
+
+#-----------------------------------------------------------------
+# addSIBusMember - Add the specified server or cluster to the
+#            SIBus if it does not already exist. Assumes that the
+#            specified SIBus already exists.
+#-----------------------------------------------------------------
+proc addSIBusMember {busName defaultDS dsJndi optArgs} {
+   #    busName    - SIBus name
+   #    defaultDS  - create default DS (true|false)
+   #    dsJndi     - jndi name of the datasource (only used if defaultDS = false)
+   #    optArgs[0] - cluster name or node name
+   #    optArgs[1] - server name
+
+   global AdminTask
+   global AdminConfig
+
+   puts " "
+   if {[llength $optArgs] == 1} {
+      set clusterName [lindex $optArgs 0]
+      puts "Adding SIBus member ${clusterName}..."
+   } else {
+      set clusterName "none"
+      set nodeName    [lindex $optArgs 0]
+      set serverName  [lindex $optArgs 1]
+      puts "Adding SIBus member ${nodeName} - ${serverName}..."
+   }
+
+   puts "  Default DataSource:    ${defaultDS}"
+   if {$defaultDS == "false"} {
+      puts "  Datasource JNDI Name:  ${dsJndi}"
+   }
+
+   # Check if the bus member already exists
+
+   set parms [list -bus $busName]
+   set busMembers [$AdminTask listSIBusMembers $parms]
+
+   foreach item $busMembers {
+      set cluster [$AdminConfig showAttribute $item cluster]
+      set node [$AdminConfig showAttribute $item node]
+      set server [$AdminConfig showAttribute $item server]
+
+      if {$cluster == $clusterName || ($server == $serverName && $node == $nodeName)} {
+         set member $item
+         break
+      }
+   }
+
+   if {[llength $optArgs] == 1} {
+      set parms [list -bus $busName -cluster $clusterName -createDefaultDatasource $defaultDS]
+   } else {
+      set parms [list -bus $busName -node $nodeName -server $serverName -createDefaultDatasource $defaultDS]
+   }
+
+   if {$defaultDS == "false"} {
+      lappend parms -datasourceJndiName $dsJndi
+   }
+
+   if {![info exists member]} {
+      if {[catch {set member [$AdminTask addSIBusMember $parms]} result]} {
+         puts "WSADMIN EXCEPTION: ${result}"
+         puts "Terminating due to exception!"
+         exit
+      } else {
+         puts "SIBus member added successfully!"
+      }
+   } else {
+      puts "Bus member already exists!"
+   }
+
+   return $member
+}
+
+
+#-----------------------------------------------------------------
+# enableSIBService - Enable the SIB Service on the specified
+#            server.
+#-----------------------------------------------------------------
+proc enableSIBService {server} {
+   #    server - server config id
+
+   global AdminConfig
+
+   #set serverName  [getName $server]
+   set serverName $server
+
+   #set service [$AdminConfig list SIBService $server]
+   set search "*servers/${serverName}|*"
+   set serviceList [$AdminConfig list SIBService]
+   set oI [lsearch -glob $serviceList $search]
+   set service [lindex $serviceList $oI]
+
+   puts " "
+   puts "Enabling SIB Service on ${serverName}..."
+
+   if {[llength $service] != 1} {
+      puts "Unable to find SIB Service!"
+   } else {
+      set parms {{enable true}}
+      $AdminConfig modify $service $parms
+      puts "SIB Service enabled successfully!"
+   }
+}
+
+#-----------------------------------------------------------------
+# createSIBus - Create a new SIBus if one does not exist. Otherwise,
+#            return the existing SIBus.
+#-----------------------------------------------------------------
+proc createSIBus {busName} {
+   #    busName - SIBus name
+
+   global AdminTask
+   global AdminConfig
+
+   puts " "
+   puts "Creating SIBus ${busName}..."
+
+   # Check if the SIBus already exists
+
+   set SIBus [$AdminConfig getid "/SIBus:${busName}/"]
+
+   if {$SIBus == ""} {
+      set parms [list -bus $busName]
+      if {[catch {set SIBus [$AdminTask createSIBus $parms]} result]} {
+         puts "WSADMIN EXCEPTION: ${result}"
+         puts "Terminating due to exception!"
+         exit
+      } else {
+         puts "${busName} created successfully!"
+      }
+   } else {
+      puts "${busName} already exists!"
+   }
+
+   return $busName
+}
+
+
+#-----------------------------------------------------------------
+# getName - Return the base name of the config object.
+#-----------------------------------------------------------------
+proc getName {args} {
+   # arg[0] - object id
+
+   set id [lindex $args 0]
+   set endIndex [expr [string first "(" $id] - 1]
+
+   return [string range $id 0 $endIndex]
+}
+#-----------------------------------------------------------------
+# deleteClusterJMSConfig
+#-----------------------------------------------------------------
+proc deleteClusterJMSConfig {cellName clusterName} {
+
+   global AdminTask
+   global AdminConfig
+
+	set scope [$AdminConfig getid "/Cell:$cellName/ServerCluster:$clusterName"]
+	puts $scope
+
+	#delete Queue factory
+	set parms [list -type Queue]
+	set temp [$AdminTask listSIBJMSConnectionFactories $scope $parms]
+	if {!([llength $temp] == 0)} {
+		puts "delete Queue factory : {$temp}"
+		$AdminTask deleteSIBJMSConnectionFactory $temp
+	}
+
+	#delete Topic factory
+	set parms [list -type Topic]
+	set temp [$AdminTask listSIBJMSConnectionFactories $scope $parms]
+	if {!([llength $temp] == 0)} {
+		puts "delete Topic factory : {$temp}"
+		$AdminTask deleteSIBJMSConnectionFactory $temp
+	}
+
+	#delete Queue
+	set temp [$AdminTask listSIBJMSQueues $scope]
+	if {!([llength $temp] == 0)} {
+		puts "delete Queue : {$temp}"
+		$AdminTask deleteSIBJMSQueue $temp
+	}
+
+	#delete Topic
+	set temp [$AdminTask listSIBJMSTopics $scope]
+	if {!([llength $temp] == 0)} {
+		puts "delete Topic : {$temp}"
+		$AdminTask deleteSIBJMSTopic $temp
+	}
+
+	#delete ActivationSpec
+	set asList [$AdminTask listSIBJMSActivationSpecs $scope]
+	if {!([llength $asList] == 0)} {
+	   foreach item $asList {
+			puts "delete ActivationSpec : {$item}"
+	   		$AdminTask deleteSIBJMSActivationSpec $item
+	   }
+	}
+
+	#delete jms bus
+    set SIBus [$AdminConfig getid "/SIBus:eos_jms_bus/"]
+
+   if {!($SIBus == "")} {
+   		puts "delete SIBus : eos_jms_bus"
+      $AdminTask deleteSIBus { -bus eos_jms_bus }
+   }
+
+}
+
+
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+if { !($argc == 3) } {
+   puts "install: this script requires 3 parameters: node name, server name,application name"
+   puts "e.g.:     install  mynode myserv eos-default"
+   #wsadmin.bat -user lijf -password lijf -f c:/temp/install_jms12.jacl 2003was61tCell01 cluster0 eos-default
+} else {
+   set cellName         [lindex $argv 0]
+   set clusterName      [lindex $argv 1]
+   set appName          [lindex $argv 2]
+
+   puts "cellName:		$cellName"
+   puts "clusterName:	$clusterName"
+   puts "appName:	    $appName"
+
+   set cellId [$AdminConfig getid "/Cell:$cellName"]
+   set clusters [$AdminConfig list ServerCluster $cellId]
+
+	 foreach cluster $clusters {
+         set clname [$AdminConfig showAttribute $cluster name]
+         if { $clname == $clusterName } {
+         set memberlist [$AdminConfig showAttribute $cluster members]
+         set members [lindex $memberlist 0]
+
+         puts " "
+         puts "Cluster              $clname "
+         puts "Memberlist:          $memberlist"
+         #wsadmin.bat -user lijf -password lijf -f c:/temp/install_jms12.jacl 2003was61tCell01 cluster0 eos-default
+
+         foreach member $members {
+
+            set mname [$AdminConfig showAttribute $member memberName]
+            set weight [$AdminConfig showAttribute $member weight]
+
+            puts "    Member:          $mname"
+            puts "    Weight:          $weight"
+            set serverId [$AdminConfig getid "/Server:$mname"]
+            puts "    serverId:        $serverId"
+			set serverObj [$AdminConfig getObjectName $serverId]
+            puts "    serverObj:       $serverObj"
+			set nodeName    [$AdminControl getAttribute $serverObj nodeName]
+            puts "    nodeName:        $nodeName"
+
+		    setjms $nodeName $mname $appName $clusterName $cellName
+	         }
+	     }
+	}
+
+   save
+
+}

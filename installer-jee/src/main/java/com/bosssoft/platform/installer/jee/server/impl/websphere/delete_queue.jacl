@@ -1,0 +1,88 @@
+
+proc deleteQueue {cell node server  queueName } {
+   global AdminTask
+   global AdminConfig
+
+ set server [$AdminConfig getid "/Cell:$cell/Node:$node/Server:$server"]
+ 
+ puts "delete queue:$queueName"
+ set qList [$AdminTask listSIBJMSQueues $server]
+ if {[llength $qList]==0} {
+ 	puts "EOS_ResourceNotFoundException:queue not found for $queueName"
+ }
+ foreach item $qList {
+      set name [$AdminConfig showAttribute $item name]
+      if { [string compare $name $queueName] == 0 } {
+          set queue $item
+          if {[info exists queue]} {
+              puts "delete queue: $item"
+              $AdminConfig remove $queue
+              break
+          }
+      }
+ }
+
+}
+
+proc deleteMDBActivationSpec {cell node server  mdbName } {
+   global AdminTask
+   global AdminConfig
+
+ set server [$AdminConfig getid "/Cell:$cell/Node:$node/Server:$server"]
+ 
+ puts "delete SIBJMSActivationSpecs $mdbName"
+ set asList [$AdminTask listSIBJMSActivationSpecs $server]
+ 
+ foreach item $asList {
+      set name [$AdminConfig showAttribute $item name]
+      if { [string compare $name $mdbName] == 0 } {
+          set activationSpec $item
+          if {[info exists activationSpec]} {
+              puts "delete ActivationSpec: $item"
+              $AdminConfig remove $activationSpec
+              break
+          }
+      }
+ }
+
+}
+ 
+
+proc save {} {
+
+  #--------------------------------------------------------------------
+  # set up globals
+  #--------------------------------------------------------------------
+  
+  global AdminConfig
+
+  #--------------------------------------------------------------------
+  # Save all the changes
+  #--------------------------------------------------------------------
+  
+  puts "Config: Save the configuration"
+  $AdminConfig save
+  puts "------------Save successfully ------------------"
+
+}
+
+
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+
+	puts "-----$argc-----"
+	if { !($argc == 5) } {
+	   puts "install: this script requires 5 parameters: cellName nodeName serverName queueName mdbName " 
+    } else { 
+	   set cell      	[lindex $argv 0]
+	   set node      	[lindex $argv 1]
+	   set server      	[lindex $argv 2]
+	   set queueName      	[lindex $argv 3]
+	   set mdbName      	[lindex $argv 4]
+	   
+	   deleteQueue $cell $node $server $queueName 
+	   deleteMDBActivationSpec 	$cell $node $server $mdbName  
+	   save  
+	   puts "@!Script Executed Succeed!@"
+	}

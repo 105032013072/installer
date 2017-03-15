@@ -1,0 +1,10 @@
+proc checkSecurity {} {
+global AdminConfig
+ $AdminConfig save
+	puts "@!Script Executed Succeed!@"
+}
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+checkSecurity 
+	

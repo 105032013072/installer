@@ -1,0 +1,76 @@
+proc setjvmparam {cellName nodeName serverName paramName paramValue} {
+
+   #--------------------------------------------------------------
+   # set up globals
+   #--------------------------------------------------------------
+   global AdminConfig
+   global AdminControl
+
+   #--------------------------------------------------------------
+   #     -- set server
+   #--------------------------------------------------------------
+   set server [$AdminConfig getid "/Cell:$cellName/Node:$nodeName/Server:$serverName"]
+   puts "info:--checking for existence of server $serverName"
+   if {[llength $server] == 0} {
+      puts "Error: -- server not found for name $serverName"
+      return
+   }
+
+   puts "begin to set $paramName property..."
+
+   set webs [$AdminConfig list WebContainer $server]
+   set web1 [lindex $webs 0]
+	      
+   set webcontainer_prop [$AdminConfig show $web1 properties]
+   set isExist [string first $paramName $webcontainer_prop]
+   
+   if { $isExist == -1 } { 
+	   set name_attr    [list name $paramName]
+	   set value_attr   [list value $paramValue]
+	   set req_attr     [list required false]
+	   set prop [list $name_attr $value_attr $req_attr]
+	   $AdminConfig create Property $web1 $prop
+	   puts "info:--com.ibm.ws.webcontainer.invokefilterscompatibility webconter property created."   
+   } else {
+   	   puts "info:--$paramName webcontainer property already exists."
+   }
+   
+}
+
+
+proc save {} {
+
+  #--------------------------------------------------------------------
+  # set up globals
+  #--------------------------------------------------------------------
+
+  global AdminConfig
+
+  #--------------------------------------------------------------------
+  # Save all the changes
+  #--------------------------------------------------------------------
+
+  puts "Config: Save the configuration"
+
+  $AdminConfig save
+
+}
+
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+if { !($argc == 5) } {
+   puts "install: this script requires 5 parameters:cell name, node name, server name, paramName, paramValue"
+   puts "e.g.:     set_webcontainer_param.jacl  mycell mynode myserv pn pv"
+} else {
+   set cellName         [lindex $argv 0]
+   set nodeName         [lindex $argv 1]
+   set serverName       [lindex $argv 2]
+   set paramName        [lindex $argv 3]
+   set paramValue       [lindex $argv 4]
+
+   setjvmparam $cellName $nodeName $serverName $paramName $paramValue
+
+   save
+   puts "@!Script Executed Succeed!@"
+}

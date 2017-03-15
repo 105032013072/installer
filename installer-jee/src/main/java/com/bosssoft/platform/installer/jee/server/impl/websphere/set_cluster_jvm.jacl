@@ -1,0 +1,133 @@
+proc setjvmparam {cellName clusterName paramName paramValue} {
+
+   #--------------------------------------------------------------
+   # set up globals
+   #--------------------------------------------------------------
+   global AdminConfig
+   global AdminControl
+
+
+   set cellId [$AdminConfig getid "/Cell:$cellName"]
+   set clusters [$AdminConfig list ServerCluster $cellId]
+   puts "Clusters: $clusters"
+
+   foreach cluster $clusters {
+      set clname [$AdminConfig showAttribute $cluster name]
+      if { $clname == $clusterName } {
+	     set memberlist [$AdminConfig showAttribute $cluster members]
+		 set members [lindex $memberlist 0]
+
+         puts " "
+		 puts "Cluster              $clname "
+		 puts "Memberlist:          $memberlist"
+
+		 foreach member $members {
+		    set mname [$AdminConfig showAttribute $member memberName]
+		    set nodeName [$AdminConfig showAttribute $member nodeName]
+		    puts "    Member:        $mname"
+		    puts "    Node:          $nodeName"
+
+		    puts "begin to set $paramName property..."
+		    set svr [$AdminConfig getid "/Server:$mname"]
+            set jvms [$AdminConfig list JavaVirtualMachine $svr]
+            set jvm1 [lindex $jvms 0]
+            
+            set jvm_prop [$AdminConfig show $jvm1 systemProperties]
+   			set isExist [string first $paramName $jvm_prop]
+   
+		    if { $isExist == -1 } {
+	            set name_attr   [list name $paramName]
+	            set value_attr  [list value $paramValue]
+	            set req_attr    [list required false]
+	            set prop [list $name_attr $value_attr $req_attr]
+	            $AdminConfig create Property $jvm1 $prop
+	            puts "info:--$paramName jvm system property created."
+	
+	            deleteWebContainerParameter  $svr com.ibm.ws.webcontainer.invokefilterscompatibility
+	            addWebContainerParameter $svr com.ibm.ws.webcontainer.invokefilterscompatibility true
+		    } else {
+   	   			puts "info:--$paramName jvm system property already exists."
+   			}
+		 }
+	  }
+   }
+}
+
+proc addWebContainerParameter {server paraName paraValue} {
+   global AdminConfig
+
+   puts "Begin to set $paraName WebContainer property..."
+   set webs [$AdminConfig list WebContainer $server]
+   set web1 [lindex $webs 0]
+
+   set name_attr   [list name $paraName]
+   set value_attr  [list value $paraValue]
+   set req_attr    [list required false]
+   set prop [list $name_attr $value_attr $req_attr]
+
+   $AdminConfig create Property $web1 $prop
+
+   puts "$paraName WebContainer property created."
+}
+
+proc deleteWebContainerParameter {server propName} {
+   global AdminConfig
+   set props [$AdminConfig list Property $server]
+	 foreach prop $props {
+      set name [ $AdminConfig showAttribute $prop name ]
+      if {[string compare $propName $name] == 0} {
+         $AdminConfig remove $prop
+         $AdminConfig save
+         puts "WebContainer parameter $propName deleted."
+      }
+   }
+}
+
+proc save {} {
+
+  #--------------------------------------------------------------------
+  # set up globals
+  #--------------------------------------------------------------------
+
+  global AdminConfig
+
+  #--------------------------------------------------------------------
+  # Save all the changes
+  #--------------------------------------------------------------------
+
+  puts "Config: Save the configuration"
+
+  $AdminConfig save
+
+}
+#-----------------------------------------------------------------
+# getName - Return the base name of the config object.
+#-----------------------------------------------------------------
+proc getName {args} {
+   # arg[0] - object id
+
+   set id [lindex $args 0]
+   set endIndex [expr [string first "(" $id] - 1]
+
+   return [string range $id 0 $endIndex]
+}
+
+
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+if { !($argc == 4) } {
+   puts "install: this script requires 3 parameters:cellName,clustername,paramName, paramValue"
+   puts "e.g.:     install  mynode myserv eospath earPath"
+} else {
+   set cellName        [lindex $argv 0]
+   set clusterName     [lindex $argv 1]
+   set paramName       [lindex $argv 2]
+   set paramValue      [lindex $argv 3]
+
+   setjvmparam $cellName $clusterName $paramName $paramValue
+
+   save
+   puts "@!Script Executed Succeed!@"
+
+}

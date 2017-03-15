@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<variable name="PRODUCT_NAME" value="BIIP Platform" />
+	<variable name="VERSION_NUMBER" value="7.0" />
+	<variable name="EDITION" value="DE" />
+	<variable name="RUNNER_TYPE" value="install" />
+	<!-- 安装此产品需要的空间，以MB为单位 -->
+	<variable name="DISK_NEEDED" value="1024" />
+	<loadproperties srcfile="productinfo.properties" />
+	<!-- <listener classname="com.primeton.abc.WListener"/> -->
+	<renderer classname="com.bosssoft.platform.installer.wizard.gui.StepListRenderer" />
+
+	<steps firststep="01">
+		<step id="01" desc="Install Initialize">
+			<echo message="start install Primeton Platform DE............" />
+			<if>
+				<equals arg1="${IS_SILENT_INSTALL}" arg2="true" />
+				<then>
+					<action name="silent installing init"
+						classname="com.primeton.installer.eos4banking.action.SilentInit" />
+				</then>
+			</if>
+			<action name="init install"
+				classname="com.bosssoft.platform.installer.wizard.action.InstallerInitialize"
+				desc="Installer Initialize..." />
+			<echo message="INSTALL_ROOT ............${INSTALL_ROOT}" />
+			<action name="get temp dir" classname="com.bosssoft.platform.installer.wizard.action.GetTempDir"
+				desc="get temprary dir">
+				<parameter name="variable_key" value="TEMP_DIR" />
+			</action>
+			<echo message="tempdir == ${TEMP_DIR}" />
+			<nextstep default="011" />
+		</step>
+		<step id="011" desc="Temp Space Check">
+			<action name="check temp space" classname="com.bosssoft.platform.installer.wizard.action.CheckDiskSpace"
+				desc="Disk space is enough">
+				<parameter name="DIR" value="${TEMP_DIR}" />
+				<parameter name="SPACESIZE" value="200" />
+				<parameter name="VARIABLE_INDEX" value="TEMPSPACE_ENOUGH" />
+			</action>
+			<nextstep discriminator="${TEMPSPACE_ENOUGH}">
+				<branch id="true" stepid="02" />
+				<branch id="false" stepid="012" />
+			</nextstep>
+		</step>
+		<step id="012" desc="TempSpaceChoose">
+			<gui setuppanel="com.bosssoft.platform.installer.wizard.gui.TempSpaceChoosePanel"
+				controlpanel="com.bosssoft.platform.installer.wizard.gui.ConfirmCancelControlPanel"
+				render="false" />
+			<nextstep default="011" />
+		</step>
+		<step id="02" desc="Introduction">
+			<gui setuppanel="com.bosssoft.platform.installer.wizard.gui.IntroductionPanel" />
+			<nextstep default="03" />
+		</step>
+		<step id="03" desc="LicenseAgreement">
+			<gui setuppanel="com.bosssoft.platform.installer.wizard.gui.LicenseViewPanel" />
+			<nextstep default="04" />
+		</step>
+		<step id="04" desc="IntallDir">
+			<gui setuppanel="com.bosssoft.platform.installer.wizard.gui.ChooseInstallDirPanel" />
+			<nextstep default="05" />
+		</step>
+		<step id="05" desc="ApplicationServer">
+			<gui setuppanel="com.bosssoft.platform.installer.wizard.gui.AppSvrPanel" />
+			<nextstep default="06" />
+		</step>
+		<step id="06" desc="OptionComponents"
+			interceptor="com.bosssoft.platform.installer.wizard.event.OptionalComponentsInterceptor">
+			<gui setuppanel="com.primeton.installer.eos4banking.gui.OptionalComponentsPanel" />
+			<nextstep default="08" />
+		</step>
+		<step id="07" desc="AdministratorInfo">
+			<gui setuppanel="com.primeton.installer.eos4banking.gui.AdminInfoPanel" />
+			<nextstep default="08" />
+		</step>
+		<step id="08" desc="IPPort4Management">
+			<gui setuppanel="com.bosssoft.platform.installer.wizard.gui.ChooseIPPanel" />
+			<nextstep default="09" />
+		</step>
+		<step id="09" desc="AppsOption">
+			<gui
+				setuppanel="com.primeton.installer.eos4banking.gui.InstallApplicationDEPanel" />
+			<nextstep default="10" />
+		</step>
+		<step id="10" desc="ConfigDatasource">
+			<gui setuppanel="com.bosssoft.platform.installer.wizard.gui.ConfigDBPanel" />
+			<nextstep default="11" />
+		</step>
+		<step id="11" desc="DigestInfo">
+			<gui setuppanel="com.primeton.installer.eos4banking.gui.DigestPanel" />
+			<nextstep default="12" />
+		</step>
+		<step id="12" desc="Installing" auto="true">
+			<gui setuppanel="com.bosssoft.platform.installer.wizard.gui.InstallingPanel" />
+			<actionscall id="install" />
+			<nextstep default="13" />
+		</step>
+		<step id="13" desc="Finished">
+			<gui setuppanel="com.bosssoft.platform.installer.wizard.gui.InstallFinishedPanel" />
+		</step>
+	</steps>
+
+	<actions id="install">
+		<mkdir dir="${INSTALL_DIR}" />
+		<setvalue key="AS_TOMCAT_HOME" value="${INSTALL_DIR}/apache-tomcat-7.0.54" />
+		<unzip src="${INSTALL_ROOT}/resources/public_comps/jdk/1.5/jdk.zip"
+			dest="${INSTALL_DIR}/ide/eclipse/jre" scale="10" />
+		<setvalue key="JAVA_HOME" value="${INSTALL_DIR}/ide/eclipse/jre" />
+		<setvalue key="IS_DEPLOY_GOVERNOR" value="true" />
+		<setvalue key="IS_DEPLOY_DEFAULTAPP" value="true" />
+		<setvalue key="APP_SERVER_NAME" value="Tomcat" />
+		<setvalue key="APP_SERVER_TYPE" value="Tomcat7.0.54" />
+		<echo
+			message="...... unzip ${INSTALL_ROOT}/resources/as_comps/tomcat/7.0.54/apache-tomcat-7.0.54.zip to ${INSTALL_DIR}/apache-tomcat-7.0.54" />
+		<unzip
+			src="${INSTALL_ROOT}/resources/as_comps/tomcat/7.0.54/apache-tomcat-7.0.54.zip"
+			dest="${INSTALL_DIR}/apache-tomcat-7.0.54" scale="30" />
+		<echo message="...... update tomcat http port" />
+		<action name="update tomcat port"
+			classname="com.primeton.installer.eos4banking.action.UpdateTomcatPort"
+			desc="Update Tomcat Http Port" scale="5">
+			<parameter name="SERVER_XML_PATH" value="${AS_TOMCAT_HOME}/conf/server.xml" />
+			<parameter name="TOMCAT_PORT" value="${APP_SERVER_PORT_DE}" />
+		</action>
+		<echo message=".....${AS_TOMCAT_HOME}" />
+		<echo
+			message="unzip ${INSTALL_ROOT}/resources/public_comps/studio/eclipse.zip to ${INSTALL_DIR}/ide" />
+		<unzip src="${INSTALL_ROOT}/resources/public_comps/studio/eclipse.zip"
+			dest="${INSTALL_DIR}/ide" scale="60" />
+		<!--echo
+			message="${INSTALL_ROOT}/resources/public_comps/studio/wtp.zip to ${INSTALL_DIR}/ide" />
+		<unzip src="${INSTALL_ROOT}/resources/public_comps/studio/wtp.zip"
+			dest="${INSTALL_DIR}/ide" scale="30" /-->
+		<action name="init appsvr" classname="com.bosssoft.platform.installer.wizard.action.InitAppsvr"
+			desc="Init AppServer" scale="10">
+			<parameter name="APPSVR_TYPE" value="${APP_SERVER_TYPE}" />
+		</action>
+		<action name="config appsvr"
+			classname="com.primeton.installer.eos4banking.action.ConfigAppsvr"
+			desc="Config AppServer" scale="10">
+			<parameter name="APPSVR_TYPE" value="${APP_SERVER_TYPE}" />
+		</action>
+		<!-- 拷贝卸载资源 -->
+		<copydir src="${INSTALL_ROOT}/installer/uninstall" dest="${INSTALL_DIR}/uninstall" />
+		<copydir src="${INSTALL_ROOT}/installer/lib" dest="${INSTALL_DIR}/uninstall/lib" />
+		<copydir src="${INSTALL_ROOT}/installer/i18n" dest="${INSTALL_DIR}/uninstall/i18n" />
+		<copydir src="${INSTALL_ROOT}/installer/image" dest="${INSTALL_DIR}/uninstall/image" />
+		<copyfile src="${INSTALL_ROOT}/installer/config/productinfo.properties"
+			dest="${INSTALL_DIR}/uninstall/config/productinfo.properties" />
+		<if>
+			<equals arg1="${DB_IS_INIT}" arg2="true" />
+			<then>
+				<action name="init Database"
+					classname="com.primeton.installer.eos4banking.action.InitDB" desc=""
+					scale="10">
+					<parameter name="COMPONENT_NAMES" value="server,cap" />
+				</action>
+			</then>
+		</if>
+		<action name="deploy base components" classname="com.primeton.install.action.DeployBaseComps"
+			desc="Deploy base components" scale="60">
+		</action>
+		<action name="deploy option components" classname="com.primeton.install.action.DeployOptionComps"
+			desc="Deploy option components" scale="60">
+		</action>
+		<echo
+			message="...... copy jdbc jars to ${INSTALL_DIR}/ide/eostools/eclipse/plugins/com.primeton.studio.server.library_7.0.2.0/server/3rd/jdbc" />
+		<action name="ACTION.COPYFILE" classname="com.bosssoft.platform.installer.wizard.action.CopyJDBCDrivers"
+			scale="2" desc="复制默认JDBC驱动jar">
+			<parameter name="JDBC_DIR"
+				value="${INSTALL_ROOT}/resources/base_comps/eos/lib/jdbc" />
+			<parameter name="TARGET_DIRS"
+				value="${INSTALL_DIR}/ide/eclipse/dropins/eostools/eclipse/plugins/com.primeton.studio.server.library_7.0.2.0/server/3rd/jdbc" />
+		</action>
+		<echo message="...... create shortcut" />
+		<action name="create shortcut"
+			classname="com.primeton.installer.eos4banking.action.CreateShortcut"
+			desc="Start Menu">
+			<parameter name="KEYWORD" value="Platform" />
+		</action>
+		<echo message="...... register product" />
+		<action name="register this"
+			classname="com.primeton.installer.eos4banking.action.RegisterProduct"
+			desc="Register Product">
+		</action>
+		<!-- 创建开始菜单产品卸载快捷方式 -->
+		<action name="export context"
+			classname="com.bosssoft.platform.installer.wizard.action.ExportContext2Properties"
+			desc="Start Menu">
+			<parameter name="EXPORT_FILE"
+				value="${INSTALL_DIR}/uninstall/config/context.properties" />
+			<parameter name="KEYS" value="INSTALL_DIR,SHORTCUT_DIR" />
+		</action>
+		<echo message="...... export context for validate" />
+		<action name="export context 4 validate"
+			classname="com.primeton.installer.eos4banking.action.ExportContext2Properties"
+			desc="export context">
+			<parameter name="EXPORT_FILE" value="${INSTALL_DIR}/install-context.properties" />
+		</action>
+		<echo message="OK............................................" />
+		<copyfile src="${INSTALL_ROOT}/installer/readme.txt" dest="${INSTALL_DIR}/readme.txt" />
+		<copyfile src="${INSTALL_ROOT}/installer/readme_cn.txt" dest="${INSTALL_DIR}/readme_cn.txt" />
+		<copyfile src="${INSTALL_LOGFILE_PATH}" dest="${INSTALL_DIR}/${INSTALL_LOGFILE_NAME}" />
+	    <delete file="${INSTALL_DIR}/install-context.properties"></delete>
+	</actions>
+</project>

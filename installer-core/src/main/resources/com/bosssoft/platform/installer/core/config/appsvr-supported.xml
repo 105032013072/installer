@@ -1,0 +1,3 @@
+<servers>
+	<server name="Tomcat" version="7.0.54" editorPanel="com.primeton.installer.eos4banking.gui.TomcatEditorDEPanel"/>
+</servers>

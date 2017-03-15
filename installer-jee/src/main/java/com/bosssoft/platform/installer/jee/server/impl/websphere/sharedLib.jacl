@@ -1,0 +1,48 @@
+proc addSharedLibrary {cell node server sharedLibraryName sharedLibraryClasspath} {
+   global AdminConfig
+     
+   set serv [$AdminConfig getid "/Cell:$cell/Node:$node/Server:$server"]
+ 
+    puts "create shared library $sharedLibraryName and $sharedLibraryClasspath" 
+    set name_attr	[list name $sharedLibraryName]
+	set value_attr	[list classPath $sharedLibraryClasspath]
+	set prop		[list $name_attr $value_attr]
+	$AdminConfig create Library $serv $prop
+	
+   set appServer [$AdminConfig list ApplicationServer $serv]
+   puts "$appServer" 
+   
+   #set classLoad [$AdminConfig showAttribute $appServer classloaders]
+   #set classLoader1 [lindex $classLoad 0]
+   
+   set classLoader1 [$AdminConfig create Classloader $appServer {{mode PARENT_LAST}}]
+   
+   set name_attr	[list libraryName $sharedLibraryName]
+   set value_attr	[list sharedClassloader true]
+   set prop			[list $name_attr $value_attr]
+   $AdminConfig create LibraryRef $classLoader1 $prop
+  
+   $AdminConfig save
+   puts "------------Save successfully ------------------"
+}
+
+
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+
+	puts "-----$argc-----"
+	if { !($argc == 5) } {
+	   puts "install: this script requires 5 parameters: $cell $node $server $sharedLibraryName $sharedLibraryClasspath"
+	   puts "e.g.:    cell node server sharedLibraryName sharedLibraryClasspath "
+	   } else { 
+	   set cell							[lindex $argv 0]
+	   set node      					[lindex $argv 1]
+	   set server						[lindex $argv 2]
+	   set sharedLibraryName      		[lindex $argv 3]
+	   set sharedLibraryClasspath      	[lindex $argv 4]
+	   addSharedLibrary $cell $node $server $sharedLibraryName $sharedLibraryClasspath
+	   puts "@!Script Executed Succeed!@" 	 
+	}
+
+

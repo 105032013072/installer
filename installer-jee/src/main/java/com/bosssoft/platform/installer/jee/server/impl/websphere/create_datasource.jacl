@@ -1,0 +1,563 @@
+proc addDataSource_oracle {nodeName serverName driverPath url userName password jndi dsname } {
+ puts "-----addDataSource_oracle-----"
+ 
+ global AdminConfig
+
+ set server [$AdminConfig getid "/Node:$nodeName/Server:$serverName"]
+ set security_root [$AdminConfig list Security]
+ set jdbc_provider [$AdminConfig getid "/Server:$serverName/JDBCProvider:ORACLE JDBCProvider for EOS"]
+ 
+ if { [llength $jdbc_provider] > 0 } {
+ 	puts "info:--the jdbc_provider for oracle is exist"  
+ } else {
+	 puts "info:--begin to create jdbc provider"
+	 set jdbc_classpath [list classpath $driverPath]		
+	 set jdbc_name [list name "ORACLE JDBCProvider for EOS"]
+	 set jdbc_implClass [list implementationClassName "oracle.jdbc.pool.OracleConnectionPoolDataSource"] 
+	 #set jdbc_implClass [list implementationClassName "oracle.jdbc.driver.OracleDriver"]
+	 set jdbc_xa [list xa false]
+	 set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa $jdbc_classpath]
+	 #set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa ]
+	 set jdbc_provider [$AdminConfig create JDBCProvider $server $jdbc_attrs] 
+	 puts "info:--JDBCProvider created"
+ }
+
+ set jaas_all [$AdminConfig list JAASAuthData]
+ foreach jaas $jaas_all {
+   set alias [$AdminConfig showAttribute $jaas alias]
+   if { $alias == "${dsname}_ora_jdbc_jaasauth" } {
+     $AdminConfig remove $jaas
+   }
+ }
+ 
+ puts "info:--begin to create JAASAuthData..."
+ set jaas_alias [list alias "${dsname}_ora_jdbc_jaasauth"] 
+ set jaas_userId [list userId $userName]
+ set jaas_password [list password $password]
+ set jaas_data [list $jaas_alias $jaas_userId $jaas_password] 
+ $AdminConfig create JAASAuthData $security_root $jaas_data
+ puts "info:--JAASAuthData created."
+ 
+ set ds_all [$AdminConfig list DataSource]
+ foreach ds_1 $ds_all {
+ 	set name1 [$AdminConfig showAttribute $ds_1 name]
+ 	if { $name1 ==$dsname } {
+        puts "info:--the $dsname exist,reconfig it."  
+		$AdminConfig remove $ds_1
+ 	}
+ }
+ 
+ puts "info:--begin to create DataSource"
+ set ds_auth [list authDataAlias "${dsname}_ora_jdbc_jaasauth"]
+ set ds_jndi [list jndiName $jndi]
+ set ds_name [list name $dsname]
+ set ds_helper [list datasourceHelperClassname "com.ibm.websphere.rsadapter.OracleDataStoreHelper"]
+ set ds_statementCache [list statementCacheSize 10] 
+ 
+ set ds_url [list [list name "URL"] [list value $url] [list type java.lang.String] [list required true]]
+ set ds_driverType [list [list name "driverType"] [list value thin] [list type java.lang.String] [list required false]]
+ #set ds_logPrintMask [list [list name "oraclelogPrintMask"] [list value 62] [list type java.lang.Integer] [list required false]]
+ #set ds_logModuleMask [list [list name "oraclelogModuleMask"] [list value 1] [list type java.lang.Integer] [list required false]]
+ #set ds_logCategoryMask [list [list name "oraclelogCategoryMask"] [list value 47] [list type java.lang.Integer] [list required false]]
+ #set ds_MAD [list [list name "enableMultithreadedAccessDetection"] [list value false] [list type java.lang.Boolean] [list required true]]   
+  
+ #set ds_props [list $ds_url $ds_driverType $ds_logPrintMask $ds_logModuleMask $ds_logCategoryMask $ds_MAD]
+ set ds_props [list $ds_url $ds_driverType ]
+ set ds_resourceProps [list resourceProperties $ds_props]
+ set ds_resourcePropsSet [list propertySet [list $ds_resourceProps]] 
+ set ds_attrs [list $ds_name $ds_jndi $ds_auth $ds_helper $ds_statementCache $ds_resourcePropsSet] 
+ set ds [$AdminConfig create DataSource $jdbc_provider $ds_attrs] 
+ puts "info:--DataSource created"
+ 
+ puts "info:--begin to create ConnectionPool"  
+ set cp_minConn [list minConnections 1]
+ set cp_maxConn [list maxConnections 30]
+ set cp_attrs [list $cp_minConn $cp_maxConn]
+ set connectionPool [$AdminConfig create ConnectionPool $ds $cp_attrs] 
+ puts "info:--ConnectionPool created"
+ 
+ puts "info:--save the configuration..."
+ $AdminConfig save
+ puts "@!Script Executed Succeed!@"
+
+}
+
+proc getJDBC_LIB_PATH {} {
+   global AdminConfig
+	 set vars [$AdminConfig list VariableSubstitutionEntry]
+		  foreach var $vars {
+		  set symName [$AdminConfig showAttribute $var symbolicName ]
+		      if {[string compare WAS_INSTALL_ROOT $symName] == 0} {
+	    		set was_home [$AdminConfig showAttribute $var value ]
+	    		puts "info:--was_home:$was_home--"
+	    		set jdbc_classpath $was_home/lib/ext
+	      }
+	 }
+	 return $jdbc_classpath
+}
+
+proc addDataSource_db2 {nodeName serverName driverPath databaseName dbserverName port userName password jndi dsname } {
+ puts "-----addDataSource_db2-----"
+ global AdminConfig
+ global AdminTask
+  
+ set server [$AdminConfig getid "/Node:$nodeName/Server:$serverName"]
+ set security_root [$AdminConfig list Security]
+ set jdbc_provider [$AdminConfig getid "/Server:$serverName/JDBCProvider:DB2 JDBCProvider for EOS"]
+ 
+ if { [llength $jdbc_provider] > 0 } {
+ 	puts "info:--the jdbc_provider for db2 is exist"    
+ }  else {
+ 	puts "begin to create jdbc provider"
+	 set jdbc_classpath [list classpath $driverPath]
+	 set jdbc_name [list name "DB2 JDBCProvider for EOS"]
+	 set jdbc_implClass [list implementationClassName "com.ibm.db2.jcc.DB2ConnectionPoolDataSource"] 
+	 #set jdbc_xa [list xa false]
+	 set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_classpath]
+	 #set jdbc_attrs [list $jdbc_name $jdbc_implClass ]
+	 set jdbc_provider [$AdminConfig create JDBCProvider $server $jdbc_attrs] 
+	 puts "JDBCProvider created"
+ }
+
+ set jaas_all [$AdminConfig list JAASAuthData]
+ foreach jaas $jaas_all {
+   set alias [$AdminConfig showAttribute $jaas alias]
+   if { $alias == "${dsname}_db2_jdbc_jaasauth" } {
+     $AdminConfig remove $jaas
+   }
+ }
+ 
+ puts "begin to create JAASAuthData..."
+ set jaas_alias [list alias "${dsname}_db2_jdbc_jaasauth"] 
+ set jaas_userId [list userId $userName]
+ set jaas_password [list password $password]
+ set jaas_data [list $jaas_alias $jaas_userId $jaas_password] 
+ $AdminConfig create JAASAuthData $security_root $jaas_data
+ puts "JAASAuthData created."  
+
+ set ds_all [$AdminConfig list DataSource]
+ foreach ds_1 $ds_all {
+	 set name1 [$AdminConfig showAttribute $ds_1 name]
+	 if { $name1 ==$dsname } {
+	        puts "info:--the $dsname exist,reconfig it."  
+			$AdminConfig remove $ds_1
+	 }
+ }
+ 
+ puts "begin to create DataSource"
+ set ds_auth [list authDataAlias "${dsname}_db2_jdbc_jaasauth"]
+ set ds_jndi [list jndiName $jndi]
+ set ds_name [list name $dsname]
+ set ds_helper [list datasourceHelperClassname "com.ibm.websphere.rsadapter.DB2UniversalDataStoreHelper"]
+ set ds_statementCache [list statementCacheSize 10]
+
+ set ds_dbName [list [list name "databaseName"]  [list value $databaseName] [list type java.lang.String] [list required true]] 
+ set ds_dbServer [list [list name "serverName"] [list value $dbserverName] [list type java.lang.String] [list required true]]
+ set ds_port [list [list name "portNumber"] [list value $port] [list type java.lang.Integer] [list required true]]
+ set ds_dbType [list [list name "driverType"] [list value 4] [list type java.lang.String] [list required true]]
+ 
+ set ds_props [list $ds_dbName $ds_dbServer $ds_port $ds_dbType]
+ set ds_resourceProps [list resourceProperties $ds_props]
+ set ds_resourcePropsSet [list propertySet [list $ds_resourceProps]] 
+ set ds_attrs [list $ds_name $ds_jndi $ds_auth $ds_helper $ds_statementCache $ds_resourcePropsSet] 
+ set ds [$AdminConfig create DataSource $jdbc_provider $ds_attrs] 
+ puts "DataSource created"
+ 
+ puts "begin to create ConnectionPool"  
+ set cp_minConn [list minConnections 1]
+ set cp_maxConn [list maxConnections 30]
+ set cp_attrs [list $cp_minConn $cp_maxConn]
+ set connectionPool [$AdminConfig create ConnectionPool $ds $cp_attrs] 
+ puts "Connection Pool"
+ 
+ puts "save the configuration..."
+ $AdminConfig save
+ puts "@!Script Executed Succeed!@"
+
+} 
+
+
+proc addDataSource_sqlserver {nodeName serverName driverPath databaseName dbserverName port userName password jndi dsname } {
+ puts "-----addDataSource_sqlserver-----"                              
+ global AdminConfig
+  
+ set server [$AdminConfig getid "/Node:$nodeName/Server:$serverName"]
+ set security_root [$AdminConfig list Security]
+ set jdbc_provider [$AdminConfig getid "/Server:$serverName/JDBCProvider:SQLSERVER JDBCProvider for EOS"]
+ 
+ if { [llength $jdbc_provider] > 0 } {
+   puts "info:--the jdbc_provider for sqlserver is exist"
+ } else {
+	 puts "begin to create jdbc provider"
+	 set jdbc_classpath [list classpath $driverPath]
+	 set jdbc_name [list name "SQLSERVER JDBCProvider for EOS"]
+	 set jdbc_implClass [list implementationClassName "com.microsoft.jdbcx.sqlserver.SQLServerDataSource"] 
+	 set jdbc_xa [list xa false]
+	 set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa $jdbc_classpath]
+	 #set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa ] 
+	 set jdbc_provider [$AdminConfig create JDBCProvider $server $jdbc_attrs] 
+	 puts "JDBCProvider created"
+ }
+ 
+ set jaas_all [$AdminConfig list JAASAuthData]
+ foreach jaas $jaas_all {
+   set alias [$AdminConfig showAttribute $jaas alias]
+   if { $alias == "${dsname}_sql_jdbc_jaasauth" } {
+     $AdminConfig remove $jaas
+   }
+ }
+ 
+ puts "begin to create JAASAuthData..."
+ set jaas_alias [list alias "${dsname}_sql_jdbc_jaasauth"] 
+ set jaas_userId [list userId $userName]
+ set jaas_password [list password $password]
+ set jaas_data [list $jaas_alias $jaas_userId $jaas_password] 
+ $AdminConfig create JAASAuthData $security_root $jaas_data
+ puts "JAASAuthData created." 
+
+ set ds_all [$AdminConfig list DataSource]
+ foreach ds_1 $ds_all {
+ set name1 [$AdminConfig showAttribute $ds_1 name]
+	 if { $name1 ==$dsname } {
+	    puts "info:--the $dsname exist,reconfig it."  
+		$AdminConfig remove $ds_1
+	 }
+ }
+ 
+ puts "begin to create DataSource"
+ set ds_auth [list authDataAlias "${dsname}_sql_jdbc_jaasauth"]
+ set ds_jndi [list jndiName $jndi]
+ set ds_name [list name $dsname]
+ set ds_helper [list datasourceHelperClassname "com.ibm.websphere.rsadapter.ConnectJDBCDataStoreHelper"]
+ set ds_statementCache [list statementCacheSize 10]
+ 
+ set ds_dbName [list [list name "databaseName"]  [list value $databaseName] [list type java.lang.String] [list required true]] 
+ set ds_dbServer [list [list name "serverName"] [list value $dbserverName] [list type java.lang.String] [list required true]]
+ set ds_port [list [list name "portNumber"] [list value $port] [list type java.lang.Integer] [list required true]]
+ set ds_twoPhase [list [list name "enable2Phase"] [list value false] [list type java.lang.Boolean] [list required false]]
+ set ds_selectMethod [list [list name "selectMethod"] [list value cursor] [list type java.lang.String] [list required false]]
+ 
+ set ds_props [list $ds_dbName $ds_dbServer $ds_port $ds_twoPhase]
+ set ds_resourceProps [list resourceProperties $ds_props]
+ set ds_resourcePropsSet [list propertySet [list $ds_resourceProps]] 
+ set ds_attrs [list $ds_name $ds_jndi $ds_auth $ds_helper $ds_statementCache $ds_resourcePropsSet] 
+ set ds [$AdminConfig create DataSource $jdbc_provider $ds_attrs] 
+ puts "DataSource created"
+ 
+ puts "begin to create ConnectionPool"  
+ set cp_minConn [list minConnections 1]
+ set cp_maxConn [list maxConnections 30]
+ set cp_attrs [list $cp_minConn $cp_maxConn]
+ set connectionPool [$AdminConfig create ConnectionPool $ds $cp_attrs] 
+ puts "Connection Pool"
+ 
+ puts "save the configuration..."
+ $AdminConfig save
+ puts "@!Script Executed Succeed!@"
+
+} 
+
+
+proc addDataSource_sybase {nodeName serverName driverPath databaseName dbserverName port userName password jndi dsname } {
+ puts "-----addDataSource_sybase-----"                                    
+ global AdminConfig
+  
+ set server [$AdminConfig getid "/Node:$nodeName/Server:$serverName"]
+ set security_root [$AdminConfig list Security]
+ set jdbc_provider [$AdminConfig getid "/Server:$serverName/JDBCProvider:SYBASE JDBCProvider for EOS"]
+ 
+ if { [llength $jdbc_provider] > 0 } {
+    puts "info:--the jdbc_provider for sybase is exist"
+ }  else {
+	 puts "begin to create jdbc provider"
+	 set jdbc_classpath [list classpath $driverPath]
+	 set jdbc_name [list name "SYBASE JDBCProvider for EOS"]
+	 set jdbc_implClass [list implementationClassName "com.sybase.jdbc2.jdbc.SybConnectionPoolDataSource"] 
+	 set jdbc_xa [list xa false]
+	 set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa $jdbc_classpath]
+	 set jdbc_provider [$AdminConfig create JDBCProvider $server $jdbc_attrs] 
+	 puts "JDBCProvider created"
+ }
+ 
+ set jaas_all [$AdminConfig list JAASAuthData]
+ foreach jaas $jaas_all {
+   set alias [$AdminConfig showAttribute $jaas alias]
+   if { $alias == "${dsname}_syb_jdbc_jaasauth" } {
+     $AdminConfig remove $jaas
+   }
+ }
+ 
+ puts "begin to create JAASAuthData..."
+ set jaas_alias [list alias "${dsname}_syb_jdbc_jaasauth"] 
+ set jaas_userId [list userId $userName]
+ set jaas_password [list password $password]
+ set jaas_data [list $jaas_alias $jaas_userId $jaas_password] 
+ $AdminConfig create JAASAuthData $security_root $jaas_data
+ puts "JAASAuthData created."
+ 
+ set ds_all [$AdminConfig list DataSource]
+ foreach ds_1 $ds_all {
+ set name1 [$AdminConfig showAttribute $ds_1 name]
+	 if { $name1 == $dsname } {
+	 	puts "info:--the $dsname exist,reconfig it."  
+		$AdminConfig remove $ds_1
+	 }
+ }
+ puts "begin to create DataSource"
+ set ds_auth [list authDataAlias "${dsname}_syb_jdbc_jaasauth"]
+ set ds_jndi [list jndiName $jndi]
+ set ds_name [list name $dsname]
+ set ds_helper [list datasourceHelperClassname "com.ibm.websphere.rsadapter.SybaseDataStoreHelper"]
+ set ds_statementCache [list statementCacheSize 10] 
+
+ set ds_dbName [list [list name "databaseName"]  [list value $databaseName] [list type java.lang.String] [list required true]] 
+ set ds_dbServer [list [list name "serverName"] [list value $dbserverName] [list type java.lang.String] [list required true]]
+ set ds_port [list [list name "portNumber"] [list value $port] [list type java.lang.Integer] [list required true]]
+ 
+ #set ds_props [list $ds_dbName $ds_dbServer $ds_port]
+ set ds_CHARSET [list [list name "CHARSET"] [list value utf8] [list type java.lang.String] [list required false]] 
+ set ds_CURSOR [list [list name "connectionProperties"] [list value SELECT_OPENS_CURSOR=true] [list type java.lang.String] [list required false]] 
+ set ds_props [list $ds_dbName $ds_dbServer $ds_port $ds_CHARSET $ds_CURSOR]
+ 
+ set ds_resourceProps [list resourceProperties $ds_props]
+ set ds_resourcePropsSet [list propertySet [list $ds_resourceProps]] 
+ set ds_attrs [list $ds_name $ds_jndi $ds_auth $ds_helper $ds_statementCache $ds_resourcePropsSet] 
+ set ds [$AdminConfig create DataSource $jdbc_provider $ds_attrs] 
+ puts "DataSource created"
+ 
+ puts "begin to create ConnectionPool"  
+ set cp_minConn [list minConnections 1]
+ set cp_maxConn [list maxConnections 30]
+ set cp_attrs [list $cp_minConn $cp_maxConn]
+ set connectionPool [$AdminConfig create ConnectionPool $ds $cp_attrs] 
+ puts "Connection Pool"
+ 
+ puts "save the configuration..."
+ $AdminConfig save
+ puts "@!Script Executed Succeed!@"
+
+} 
+
+proc addDataSource_informix { nodeName serverName driverPath databaseName dbserverName host port userName password jndi dsname } {
+ puts "-----addDataSource_informix-----"                                
+ global AdminConfig
+  
+ set server [$AdminConfig getid "/Node:$nodeName/Server:$serverName"]
+ set security_root [$AdminConfig list Security]
+ set jdbc_provider [$AdminConfig getid "/Server:$serverName/JDBCProvider:INFORMIX JDBCProvider for EOS"]
+ 
+ if { [llength $jdbc_provider] > 0 } {
+    puts "info:--the jdbc_provider for informix is exist"
+ }  else {
+	 puts "begin to create jdbc provider"
+	 set jdbc_classpath [list classpath $driverPath]
+	 set jdbc_name [list name "INFORMIX JDBCProvider for EOS"]
+	 set jdbc_implClass [list implementationClassName "com.informix.jdbcx.IfxConnectionPoolDataSource"] 
+	 set jdbc_xa [list xa false]
+	 set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa $jdbc_classpath]
+	 #set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa ]
+	 set jdbc_provider [$AdminConfig create JDBCProvider $server $jdbc_attrs] 
+	 puts "JDBCProvider created"
+ }
+
+ set jaas_all [$AdminConfig list JAASAuthData]
+ foreach jaas $jaas_all {
+   set alias [$AdminConfig showAttribute $jaas alias]
+   if { $alias == "${dsname}_info_jdbc_jaasauth" } {
+     $AdminConfig remove $jaas
+   }
+ }
+ 
+ puts "begin to create JAASAuthData..."
+ set jaas_alias [list alias "${dsname}_info_jdbc_jaasauth"] 
+ set jaas_userId [list userId $userName]
+ set jaas_password [list password $password]
+ set jaas_data [list $jaas_alias $jaas_userId $jaas_password] 
+ $AdminConfig create JAASAuthData $security_root $jaas_data
+ puts "JAASAuthData created."
+ 
+ set ds_all [$AdminConfig list DataSource]
+ foreach ds_1 $ds_all {
+ set name1 [$AdminConfig showAttribute $ds_1 name]
+	 if { $name1 ==$dsname } {
+	    puts "info:--the $dsname exist,reconfig it."  
+		$AdminConfig remove $ds_1
+	 }
+ }
+ 
+ puts "begin to create DataSource"
+ set ds_auth [list authDataAlias "${dsname}_info_jdbc_jaasauth"]
+ set ds_jndi [list jndiName $jndi]
+ set ds_name [list name $dsname]
+ set ds_helper [list datasourceHelperClassname "com.ibm.websphere.rsadapter.InformixDataStoreHelper"]
+ set ds_statementCache [list statementCacheSize 10]
+ 
+ #infomix:
+ set ds_dbName [list [list name "databaseName"]  [list value $databaseName] [list type java.lang.String] [list required true]] 
+ set ds_dbServer [list [list name "serverName"] [list value $dbserverName] [list type java.lang.String] [list required true]]
+ set ds_port [list [list name "portNumber"] [list value $port] [list type java.lang.Integer] [list required true]]
+ set ds_host [list [list name "ifxIFXHOST"] [list value $host] [list type java.lang.String] [list required true]]
+ set ds_lockMode [list [list name "informixLockModeWait"] [list value $port] [list type java.lang.Integer] [list required true]]
+
+ set ds_props [list $ds_dbName $ds_dbServer $ds_port $ds_host $ds_lockMode]
+ set ds_resourceProps [list resourceProperties $ds_props]
+ set ds_resourcePropsSet [list propertySet [list $ds_resourceProps]] 
+ set ds_attrs [list $ds_name $ds_jndi $ds_auth $ds_helper $ds_statementCache $ds_resourcePropsSet] 
+ set ds [$AdminConfig create DataSource $jdbc_provider $ds_attrs] 
+ puts "DataSource created"
+ 
+ puts "begin to create ConnectionPool"  
+ set cp_minConn [list minConnections 1]
+ set cp_maxConn [list maxConnections 30]
+ set cp_attrs [list $cp_minConn $cp_maxConn]
+ set connectionPool [$AdminConfig create ConnectionPool $ds $cp_attrs] 
+ puts "Connection Pool"
+ 
+ puts "save the configuration..."
+ $AdminConfig save
+ puts "@!Script Executed Succeed!@"
+
+} 
+
+proc addDataSource_mysql {nodeName serverName driverPath databaseName dbserverName port userName password jndi dsname } {
+ puts "-----addDataSource_mysql-----"
+ global AdminConfig
+ global AdminTask
+  
+ set server [$AdminConfig getid "/Node:$nodeName/Server:$serverName"]
+ set security_root [$AdminConfig list Security]
+ set jdbc_provider [$AdminConfig getid "/Server:$serverName/JDBCProvider:MYSQL JDBCProvider for EOS"]
+ 
+ if { [llength $jdbc_provider] > 0 } {
+ 	puts "info:--the jdbc_provider for mysql is exist"    
+ }  else {
+	 puts "begin to create jdbc provider"
+	 set jdbc_classpath [list classpath $driverPath]
+	 set jdbc_name [list name "MYSQL JDBCProvider for EOS"]
+	 set jdbc_implClass [list implementationClassName "com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource"] 
+	 set jdbc_xa [list xa false]
+	 set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa $jdbc_classpath]
+	 #set jdbc_attrs [list $jdbc_name $jdbc_implClass ]
+	 set jdbc_provider [$AdminConfig create JDBCProvider $server $jdbc_attrs] 
+	 puts "JDBCProvider created"
+ }
+ 
+ set jaas_all [$AdminConfig list JAASAuthData]
+ foreach jaas $jaas_all {
+   set alias [$AdminConfig showAttribute $jaas alias]
+   if { $alias == "${dsname}_mysql_jdbc_jaasauth" } {
+     $AdminConfig remove $jaas
+   }
+ }
+ 
+ puts "begin to create JAASAuthData..."
+ set jaas_alias [list alias "${dsname}_mysql_jdbc_jaasauth"] 
+ set jaas_userId [list userId $userName]
+ set jaas_password [list password $password]
+ set jaas_data [list $jaas_alias $jaas_userId $jaas_password] 
+ $AdminConfig create JAASAuthData $security_root $jaas_data
+ puts "JAASAuthData created." 
+ 
+ set ds_all [$AdminConfig list DataSource]
+ foreach ds_1 $ds_all {
+ set name1 [$AdminConfig showAttribute $ds_1 name]
+	 if { $name1 ==$dsname } {
+	    puts "info:--the $dsname exist,reconfig it."  
+		$AdminConfig remove $ds_1
+	 }
+ }
+ 
+ puts "begin to create DataSource"
+ set ds_auth [list authDataAlias "${dsname}_mysql_jdbc_jaasauth"]
+ set ds_jndi [list jndiName $jndi]
+ set ds_name [list name $dsname]
+ set ds_helper [list datasourceHelperClassname "com.ibm.websphere.rsadapter.ConnectJDBCDataStoreHelper"]
+ set ds_statementCache [list statementCacheSize 10]
+
+ set ds_dbName [list [list name "databaseName"]  [list value $databaseName] [list type java.lang.String] [list required true]] 
+ set ds_dbServer [list [list name "serverName"] [list value $dbserverName] [list type java.lang.String] [list required true]]
+ set ds_port [list [list name "portNumber"] [list value $port] [list type java.lang.Integer] [list required true]]
+ #set ds_dbType [list [list name "driverType"] [list value 4] [list type java.lang.String] [list required true]]
+ 
+ set ds_props [list $ds_dbName $ds_dbServer $ds_port ]
+ set ds_resourceProps [list resourceProperties $ds_props]
+ set ds_resourcePropsSet [list propertySet [list $ds_resourceProps]] 
+ set ds_attrs [list $ds_name $ds_jndi $ds_auth $ds_helper $ds_statementCache $ds_resourcePropsSet] 
+ set ds [$AdminConfig create DataSource $jdbc_provider $ds_attrs] 
+ puts "DataSource created"
+ 
+ puts "begin to create ConnectionPool"  
+ set cp_minConn [list minConnections 1]
+ set cp_maxConn [list maxConnections 30]
+ set cp_attrs [list $cp_minConn $cp_maxConn]
+ set connectionPool [$AdminConfig create ConnectionPool $ds $cp_attrs] 
+ puts "Connection Pool"
+ 
+ puts "save the configuration..."
+ $AdminConfig save
+ puts "@!Script Executed Succeed!@"
+
+} 
+
+proc addDataSource { nodeName serverName dbType driverPath dbIP dbServer dbPort dbName userName password jndi name } {
+			set driverPath [getJDBC_LIB_PATH]
+			
+			if { $dbType == "oracle" } {
+				  set url "jdbc:oracle:thin:@$dbIP:$dbPort:$dbName"
+  				addDataSource_oracle $nodeName $serverName $driverPath $url $userName $password $jndi $name
+  				
+	   		} elseif { $dbType == "db2" } {
+  	 			addDataSource_db2 $nodeName $serverName $driverPath $dbName $dbIP $dbPort $userName $password $jndi $name
+  	 			
+	   		} elseif { $dbType == "sqlserver" } {
+					addDataSource_sqlserver $nodeName $serverName $driverPath $dbName $dbIP $dbPort $userName $password $jndi $name		
+					
+	   		} elseif { $dbType == "sybase" } {
+					addDataSource_sybase $nodeName $serverName $driverPath $dbName $dbIP $dbPort $userName $password $jndi $name
+
+	   		} elseif { $dbType == "informix" } {
+					addDataSource_informix $nodeName $serverName $driverPath $dbName $dbServer $dbIP $dbPort $userName $password $jndi $name
+
+	   		} elseif { $dbType == "mysql" } {
+  	 			addDataSource_mysql $nodeName $serverName $driverPath $dbName $dbIP $dbPort $userName $password $jndi $name
+  	 			
+	   		}
+} 
+
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+  puts "-----enter datasource_add ! the args you input is:-----"
+	puts "-----$argc-----"
+	if { !($argc == 12) } {
+	   puts "datasource_add: this script requires 12 parameters: nodeName,serverName,dbType,driverPath,dbIP,dbServer,dbPort,dbName,userName,password,jndi,name"
+	} else { 
+	   set nodeName      	[lindex $argv 0]
+	   set serverName      	[lindex $argv 1]
+	   set dbType 		[lindex $argv 2]  
+	   set driverPath 	[lindex $argv 3]
+	   set dbIP 		[lindex $argv 4]
+	   set dbServer		[lindex $argv 5]
+	   set dbPort 		[lindex $argv 6]
+	   set dbName		[lindex $argv 7]
+	   set userName 	[lindex $argv 8]
+	   set password 	[lindex $argv 9]
+	   set jndi 		[lindex $argv 10]
+	   set name 		[lindex $argv 11]
+	   
+	    puts "nodeName:		$nodeName"
+	    puts "serverName:		$serverName"
+	    puts "dbType:  		$dbType"
+	    puts "driverPath:  		$driverPath"
+	    puts "dbIP:  		$dbIP"
+	    puts "dbServer:  		$dbServer"
+	    puts "dbPort:  		$dbPort"
+	    puts "dbName:  		$dbName"
+	    puts "userName:  		$userName"
+	    puts "password:  		$password"
+	    puts "jndi:  		$jndi"
+	    puts "name:  		$name"
+
+	    addDataSource $nodeName $serverName $dbType  $driverPath $dbIP $dbServer $dbPort $dbName $userName $password $jndi $name
+		puts "@!Script Executed Succeed!@"
+  }

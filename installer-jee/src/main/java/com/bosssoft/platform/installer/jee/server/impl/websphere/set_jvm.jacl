@@ -1,0 +1,87 @@
+proc setjvmparam {cellName nodeName serverName paramName paramValue} {
+
+   #--------------------------------------------------------------
+   # set up globals
+   #--------------------------------------------------------------
+   global AdminConfig
+   global AdminControl
+
+   #--------------------------------------------------------------
+   #     -- set server
+   #--------------------------------------------------------------
+   set server [$AdminConfig getid "/Cell:$cellName/Node:$nodeName/Server:$serverName"]
+   puts "info:--checking for existence of server $serverName"
+   if {[llength $server] == 0} {
+      puts "Error: -- server not found for name $serverName"
+      return
+   }
+
+   puts "begin to set $paramName property..."
+   set jvms [$AdminConfig list JavaVirtualMachine $server]
+   set jvm1 [lindex $jvms 0]
+   
+   set jvm_prop [$AdminConfig show $jvm1 systemProperties]
+   set isExist [string first $paramName $jvm_prop]
+   
+   if { $isExist == -1 } {   
+	   set name_attr   [list name $paramName]
+	   set value_attr  [list value $paramValue]
+	   set req_attr    [list required false]
+	   set prop [list $name_attr $value_attr $req_attr]
+	   $AdminConfig create Property $jvm1 $prop
+	   puts "info:--$paramName jvm system property created."
+   } else {
+   	   puts "info:--$paramName jvm system property already exists."
+   }
+}
+
+
+proc save {} {
+
+  #--------------------------------------------------------------------
+  # set up globals
+  #--------------------------------------------------------------------
+
+  global AdminConfig
+
+  #--------------------------------------------------------------------
+  # Save all the changes
+  #--------------------------------------------------------------------
+
+  puts "Config: Save the configuration"
+
+  $AdminConfig save
+
+}
+#-----------------------------------------------------------------
+# getName - Return the base name of the config object.
+#-----------------------------------------------------------------
+proc getName {args} {
+   # arg[0] - object id
+
+   set id [lindex $args 0]
+   set endIndex [expr [string first "(" $id] - 1]
+
+   return [string range $id 0 $endIndex]
+}
+
+
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+if { !($argc == 5) } {
+   puts "install: this script requires 5 parameters:cell name, node name, server name, paramName, paramValue"
+   puts "e.g.:     install  mynode myserv eospath earPath"
+} else {
+   set cellName         [lindex $argv 0]
+   set nodeName         [lindex $argv 1]
+   set serverName       [lindex $argv 2]
+   set paramName       [lindex $argv 3]
+   set paramValue      [lindex $argv 4]
+
+   setjvmparam $cellName $nodeName $serverName $paramName $paramValue
+
+   save
+   puts "@!Script Executed Succeed!@"
+
+}

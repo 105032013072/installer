@@ -1,0 +1,48 @@
+
+    
+
+proc startApp {cell node server  appName } {
+   global AdminConfig
+   global AdminControl
+   set appManager [$AdminControl queryNames cell=$cell,node=$node,process=$server,type=ApplicationManager,*]    
+   $AdminControl invoke $appManager startApplication $appName
+
+}
+
+
+proc save {} {
+
+  #--------------------------------------------------------------------
+  # set up globals
+  #--------------------------------------------------------------------
+  
+  global AdminConfig
+
+  #--------------------------------------------------------------------
+  # Save all the changes
+  #--------------------------------------------------------------------
+  
+  puts "Config: Save the configuration"
+  $AdminConfig save
+  puts "------------Save successfully ------------------"
+
+}
+
+
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+
+	puts "-----$argc-----"
+	if { !($argc == 4) } {
+	   puts "install: this script requires 4 parameters:cell node server appName"
+	   puts "e.g.:     deleteDS  appName "
+	   } else { 
+	   set cell      	[lindex $argv 0]
+	   set node      	[lindex $argv 1]
+	   set server      	[lindex $argv 2]
+	   set appName      	[lindex $argv 3]
+	   startApp $cell $node $server $appName 	
+	   save  
+	   puts "@!Script Executed Succeed!@"
+	}    

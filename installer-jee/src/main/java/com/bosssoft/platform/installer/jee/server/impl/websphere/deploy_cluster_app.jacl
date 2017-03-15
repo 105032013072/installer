@@ -1,0 +1,114 @@
+proc install_ear {cellName clusterName appName virtualHost earPath} {
+   #--------------------------------------------------------------
+   # set up globals
+   #--------------------------------------------------------------
+   global AdminConfig
+   global AdminControl
+   global AdminApp
+
+   #--------------------------------------------------------------
+   # do some sanity checking
+   #     -- do we have a cluster by this name?
+   #--------------------------------------------------------------
+   set cluster [$AdminConfig getid /ServerCluster:$clusterName/]
+   puts "ex12: checking for existence of cluster $clusterName"
+   if {[llength $cluster] == 0} {
+      puts "install: Error -- cluster not found for name $clusterName"
+      return
+   }
+
+   puts "begin to install $appName application..."
+   puts "deploy eos ear to websphere..."
+   set parms "-appname $appName"
+   append parms " -deployejb"
+   append parms " -cluster $clusterName"
+
+   set parms1 [subst {$parms}]
+   #$AdminApp install $earPath $parms1
+   if {[catch {$AdminApp install $earPath $parms1} result]} {
+       #There is a bug for WASND6.1.0.15 for AIX,if retry,it will be ok!.
+       puts "Retry install $appName because there is a bug for WASND6.1 for AIX."
+       if {[catch {$AdminApp install $earPath $parms1} result]} {
+         puts "WSADMIN EXCEPTION: ${result}"
+         puts "Terminating due to exception!"
+         exit
+       }
+   } else {
+       puts "install $earPath successfully!"
+   }
+
+   puts "$appName application installed."
+   set deployment [$AdminConfig getid "/Deployment:$appName/"]
+   set deployedObject [$AdminConfig showAttribute $deployment deployedObject]
+   set classloader [$AdminConfig showAttribute $deployedObject classloader]
+   $AdminConfig showall $classloader
+   $AdminConfig modify $classloader {{mode PARENT_LAST}}
+
+   set myModules [lindex [$AdminConfig showAttribute $deployedObject modules] 0]
+   set myWarModule [lindex $myModules 0]
+   $AdminConfig modify $myWarModule {{classloaderMode PARENT_LAST}}
+
+   set warClassloader [$AdminConfig showAttribute $myWarModule classloader]
+   $AdminConfig showall $warClassloader
+   $AdminConfig modify $warClassloader {{mode PARENT_LAST}}
+}
+
+  #--------------------------------------------------------------------
+  # we will uninstallApp first when we install the app
+  #--------------------------------------------------------------------
+proc uninstallApp { clusterName appName } {
+   global AdminConfig
+   global AdminControl
+   global AdminApp
+   set app [$AdminControl queryNames name=$appName,*]
+   puts "number of app $clusterName $appName"
+   puts [llength $app]
+ if { [llength $app] > 0 } {
+  $AdminApp uninstall $appName
+  save
+ }
+}
+
+proc save {} {
+
+  #--------------------------------------------------------------------
+  # set up globals
+  #--------------------------------------------------------------------
+
+  global AdminConfig
+
+  #--------------------------------------------------------------------
+  # Save all the changes
+  #--------------------------------------------------------------------
+
+  puts "Config: Save the configuration"
+  $AdminConfig save
+  puts "------------Save successfully ------------------"
+
+}
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+
+puts "-----$argc-----"
+
+	if { !($argc == 5)} {
+		puts "-----init parameters:"
+	} else {
+		set clusterName			[lindex $argv 1]
+	   	set appName				[lindex $argv 2]
+	   	set virtualHost			[lindex $argv 3]
+	   	set earpath 			[lindex $argv 4]
+	   	set cellName 			[lindex $argv 0]
+
+
+	   	puts "clusterName:			$clusterName"
+	   	puts "appName:				$appName"
+	   	puts "virtualHost:			$virtualHost"
+	   	puts "earpath:				$earpath"
+
+	   	#uninstallApp $clusterName $appName
+	   	install_ear $cellName $clusterName $appName $virtualHost $earpath
+	   	save
+        puts "@!Script Executed Succeed!@:install app."
+	}

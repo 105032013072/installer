@@ -1,0 +1,103 @@
+proc deleteDS {cell node server  dsName } {
+   global AdminConfig
+
+ set server [$AdminConfig getid "/Cell:$cell/Node:$node/Server:$server"]
+ set dss [$AdminConfig list DataSource $server]
+
+ for { set i 0 } { $i < [llength $dss] } { incr i 1 } {
+    set ds [lindex $dss $i ]
+
+    set name [$AdminConfig showAttribute $ds name]
+
+    set flag [string compare   $name $dsName ]
+
+    if { $flag == 0 } { 
+        puts "dsName $name"
+        set selectds $ds
+        break 
+        
+    }  else  { 
+       set selectds 0
+    
+    }     
+ } 
+ if { $selectds ==0 } {
+    puts "EOS_ResourceNotFoundException:datasource not found for $dsName"
+ } else {
+    $AdminConfig remove $selectds
+ }
+    
+}
+
+
+
+proc deleteDSByjndi {cell node server  dsName } {
+   global AdminConfig
+
+ set server [$AdminConfig getid "/Cell:$cell/Node:$node/Server:$server"]
+ set dss [$AdminConfig list DataSource $server]
+
+ for { set i 0 } { $i < [llength $dss] } { incr i 1 } {
+    set ds [lindex $dss $i ]
+
+    set jndiname [$AdminConfig showAttribute $ds jndiName]
+
+    set flag [string compare   $jndiname $dsName ]
+
+    if { $flag == 0 } { 
+        puts "jndiName $jndiname"
+        set selectds $ds
+        puts [llength $selectds]
+        break 
+        
+    }  else  { 
+       set selectds 0
+    
+    }     
+ } 
+ if { $selectds ==0 } {
+    puts "no ds for: $dsjndiName"
+ } else {
+    $AdminConfig remove $selectds
+ }
+     
+
+}
+
+
+proc save {} {
+
+  #--------------------------------------------------------------------
+  # set up globals
+  #--------------------------------------------------------------------
+  
+  global AdminConfig
+
+  #--------------------------------------------------------------------
+  # Save all the changes
+  #--------------------------------------------------------------------
+  
+  puts "Config: Save the configuration"
+  $AdminConfig save
+  puts "------------Save successfully ------------------"
+
+}
+
+
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+
+	puts "-----$argc-----"
+	if { !($argc == 4) } {
+	   puts "install: this script requires 1 parameters: dsName"
+	   puts "e.g.:     deleteDS  dsName "
+	   } else { 
+	   set cell      	[lindex $argv 0]
+	   set node      	[lindex $argv 1]
+	   set server      	[lindex $argv 2]
+	   set dsName      	[lindex $argv 3]
+	   deleteDS $cell $node $server $dsName 	
+	   save  
+	   puts "@!Script Executed Succeed!@"
+	}

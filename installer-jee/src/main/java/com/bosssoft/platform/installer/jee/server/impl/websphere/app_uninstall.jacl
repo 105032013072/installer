@@ -1,0 +1,120 @@
+
+proc uninstallApp {cell node server  appName } {
+   global AdminConfig
+   global AdminControl
+   global AdminApp
+   set app [$AdminControl queryNames cell=$cell,node=$node,process=$server,name=$appName,*]
+   
+ if { [llength $app] > 0 } {
+  $AdminApp uninstall $appName
+ } else {
+  puts "EOS_ResourceNotFoundException:Application not found for $appName"
+ }
+}
+
+proc deleteMDBActivationSpec {cell node server  mdbName } {
+   global AdminTask
+   global AdminConfig
+
+ set server [$AdminConfig getid "/Cell:$cell/Node:$node/Server:$server"]
+ 
+ puts "delete SIBJMSActivationSpecs :$mdbName"
+ set asList [$AdminTask listSIBJMSActivationSpecs $server]
+ 
+ foreach item $asList {
+      set name [$AdminConfig showAttribute $item name]
+      if { [string compare $name $mdbName] == 0 } {
+          set activationSpec $item
+          if {[info exists activationSpec]} {
+              #puts "delete ActivationSpec: $item"
+              $AdminConfig remove $activationSpec
+              break
+          }
+      }
+ }
+
+}
+
+
+proc deleteQueue {cell node server  queueName } {
+   global AdminTask
+   global AdminConfig
+
+ set server [$AdminConfig getid "/Cell:$cell/Node:$node/Server:$server"]
+ 
+ puts "delete queue:$queueName"
+ set qList [$AdminTask listSIBJMSQueues $server]
+ 
+ foreach item $qList {
+      set name [$AdminConfig showAttribute $item name]
+      if { [string compare $name $queueName] == 0 } {
+          set queue $item
+          if {[info exists queue]} {
+              #puts "delete queue: $item"
+              $AdminConfig remove $queue
+              break
+          }
+      }
+ }
+
+}
+
+proc save {} {
+
+  #--------------------------------------------------------------------
+  # set up globals
+  #--------------------------------------------------------------------
+  
+  global AdminConfig
+
+  #--------------------------------------------------------------------
+  # Save all the changes
+  #--------------------------------------------------------------------
+  
+  puts "Config: Save the configuration"
+  $AdminConfig save
+  puts "------------Save successfully ------------------"
+
+}
+
+
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+
+	puts "-----$argc-----"
+	if { !($argc == 4) } {
+	   puts "install: this script requires 4 parameters:cell node server appName"
+	   puts "e.g.:     deleteDS  appName "
+	   } else { 
+	   set cell      	[lindex $argv 0]
+	   set node      	[lindex $argv 1]
+	   set server      	[lindex $argv 2]
+	   set appName      	[lindex $argv 3]
+	   
+	   puts "uninstall app:$appName"
+	   uninstallApp $cell $node $server $appName 
+	   
+	   puts "delete ActivationSpec  for app:$appName 's invoke queue"
+	   set mdbName $appName
+	   append mdbName ".EOSMessageQueueAct_Invoke"
+	   deleteMDBActivationSpec $cell $node $server  $mdbName 
+	   
+	   puts "delete invoke queue for app:$appName"
+	   set queueName $appName
+	   append queueName ".EOS_INVOKE_QUEUE"	   
+	   deleteQueue $cell $node $server  $queueName 
+	   
+	   puts "delete ActivationSpec  for app:$appName 's result queue"
+	   set mdbName $appName
+	   append mdbName ".EOSMessageQueueAct_Result"
+	   deleteMDBActivationSpec $cell $node $server  $mdbName 
+	   
+	   puts "delete result queue for app:$appName"
+	   set queueName $appName
+	   append queueName ".EOS_RESULT_QUEUE"	   
+	   deleteQueue $cell $node $server  $queueName 
+	   	
+	   save  
+	   puts "@!Script Executed Succeed!@"
+	}    

@@ -1,0 +1,32 @@
+proc addCustomService {cell node server} {
+   global AdminConfig
+     
+   set serv [$AdminConfig getid "/Cell:$cell/Node:$node/Server:$server"]
+ 
+    puts "create CustomService" 
+    set enable_attr					[list enable true]
+	set externalConfigURL_attr		[list externalConfigURL EOSZHOUSystemService]
+	set classname_attr				[list classname com.primeton.system.startup.impl.WebsphereStartup]
+	set displayName_attr			[list displayName "EOS System Service"]
+	set classpath_attr				[list classpath \${USER_INSTALL_ROOT}/lib/ext/eos-system-startup.jar]
+    set prop		[list $enable_attr $externalConfigURL_attr $classname_attr $displayName_attr $classpath_attr]
+	$AdminConfig create CustomService $serv $prop
+	
+  
+   $AdminConfig save
+}
+
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+
+	puts "-----$argc-----"
+	if { !($argc == 3) } {
+	   puts "install: this script requires 5 parameters: $cell $node $server"
+	   puts "e.g.:    cell node server sharedLibraryName sharedLibraryClasspath "
+	   } else { 
+	   set cell							[lindex $argv 0]
+	   set node      					[lindex $argv 1]
+	   set server						[lindex $argv 2]
+	   addSharedLibrary $cell $node $server 
+	}

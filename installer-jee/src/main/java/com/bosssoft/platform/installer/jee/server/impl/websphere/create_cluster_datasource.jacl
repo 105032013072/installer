@@ -1,0 +1,652 @@
+#**********************************
+proc createOracleDS { clusterName driverPath url userName password jndi dsname } {
+ puts "-----addDataSource_oracle-----"
+ 
+ global AdminConfig
+ 
+ set clusterid [$AdminConfig getid "/ServerCluster:$clusterName"]
+ puts "-------$clusterid"
+ set security_root [$AdminConfig list Security]
+ set jdbc_provider [$AdminConfig getid "/ServerCluster:$clusterName/JDBCProvider:ORACLE JDBCProvider for EOS"]
+ 
+ if { [llength $jdbc_provider] > 0 } {
+   puts "info:--the jdbc_provider for oracle is exist" 
+ } else {
+	 puts "info:---begin to create jdbc provider---"
+	 #set jdbc_classpath [list classpath $driverPath]
+	 set jdbc_name [list name "ORACLE JDBCProvider for EOS"]
+	 set jdbc_implClass [list implementationClassName "oracle.jdbc.pool.OracleConnectionPoolDataSource"] 
+	 set jdbc_xa [list xa false]
+	 #set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa $jdbc_classpath]
+	 set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa ]
+	 set jdbc_provider [$AdminConfig create JDBCProvider $clusterid $jdbc_attrs] 
+	 puts "info:---JDBCProvider created---"
+ }
+
+ set jdbc_jaasauth $dsname
+ append jdbc_jaasauth "_ora_jdbc_jaasauth"
+ 
+ set jaas_all [$AdminConfig list JAASAuthData]
+ foreach jaas $jaas_all {
+   set alias [$AdminConfig showAttribute $jaas alias]
+   if { $alias == $jdbc_jaasauth } {
+     $AdminConfig remove $jaas
+     $AdminConfig save
+   }
+ }
+ 
+ puts "info:---begin to create JAASAuthData---"
+ 
+ set jaas_alias [list alias "$jdbc_jaasauth"] 
+ set jaas_userId [list userId $userName]
+ set jaas_password [list password $password]
+ set jaas_data [list $jaas_alias $jaas_userId $jaas_password] 
+ $AdminConfig create JAASAuthData $security_root $jaas_data
+ puts "info:--JAASAuthData created."
+ 
+ puts "info:---Adding Authentication Alias and Schema to datastore used by Bus---"
+ set jdbc_jaasauth $jdbc_jaasauth
+ set datastoreIDs [$AdminConfig list SIBDatastore]
+ set authAlias [list authAlias $jdbc_jaasauth]
+ foreach datastoreID $datastoreIDs {
+	set schema [list schemaName $userName]
+	set attributes [list $authAlias $schema ]
+	$AdminConfig modify $datastoreID $attributes
+ }
+ 
+set ds_all [$AdminConfig list DataSource]
+ foreach ds_1 $ds_all {
+ set name1 [$AdminConfig showAttribute $ds_1 name]
+ if { $name1 ==$dsname } {
+        puts "info:--the $dsname exist,reconfig it."  
+		$AdminConfig remove $ds_1
+ }
+ }
+ 
+ puts "info:---begin to create DataSource---"
+ set ds_auth [list authDataAlias "$jdbc_jaasauth"]
+ set ds_jndi [list jndiName $jndi]
+ set ds_name [list name $dsname]
+ set ds_helper [list datasourceHelperClassname "com.ibm.websphere.rsadapter.OracleDataStoreHelper"]
+ set ds_statementCache [list statementCacheSize 10] 
+ 
+ set ds_url [list [list name "URL"] [list value $url] [list type java.lang.String] [list required true]]
+ set ds_driverType [list [list name "driverType"] [list value thin] [list type java.lang.String] [list required false]]
+ #set ds_logPrintMask [list [list name "oraclelogPrintMask"] [list value 62] [list type java.lang.Integer] [list required false]]
+ #set ds_logModuleMask [list [list name "oraclelogModuleMask"] [list value 1] [list type java.lang.Integer] [list required false]]
+ #set ds_logCategoryMask [list [list name "oraclelogCategoryMask"] [list value 47] [list type java.lang.Integer] [list required false]]
+ #set ds_MAD [list [list name "enableMultithreadedAccessDetection"] [list value false] [list type java.lang.Boolean] [list required true]]   
+  
+ #set ds_props [list $ds_url $ds_driverType $ds_MAD]
+ set ds_props [list $ds_url $ds_driverType]
+ set ds_resourceProps [list resourceProperties $ds_props]
+ set ds_resourcePropsSet [list propertySet [list $ds_resourceProps]] 
+ set ds_attrs [list $ds_name $ds_jndi $ds_auth $ds_helper $ds_statementCache $ds_resourcePropsSet] 
+ set ds [$AdminConfig create DataSource $jdbc_provider $ds_attrs] 
+ puts "info:---DataSource created---"
+ 
+ puts "begin to create ConnectionPool"  
+ set cp_minConn [list minConnections 1]
+ set cp_maxConn [list maxConnections 30]
+ set cp_attrs [list $cp_minConn $cp_maxConn]
+ set connectionPool [$AdminConfig create ConnectionPool $ds $cp_attrs] 
+ puts "info:---Connection Pool---"
+ puts "info:---Completed create DataSource---"
+ 
+} 
+
+proc createInfomixDS {clusterName driverPath databaseName dbserverName host port userName password jndi dsname } {
+ 
+ global AdminConfig
+ puts "-----addDataSource_informix-----" 
+ 
+ set clusterid [$AdminConfig getid "/ServerCluster:$clusterName"]
+ set security_root [$AdminConfig list Security]
+ set jdbc_provider [$AdminConfig getid "/ServerCluster:$clusterName/JDBCProvider:INFORMIX JDBCProvider for EOS"]
+ 
+ if { [llength $jdbc_provider] > 0 } {
+   puts "info:--the jdbc_provider for Infomix is exist"
+ } else {
+	 puts "begin to create jdbc provider"
+	 #set jdbc_classpath [list classpath $driverPath]
+	 set jdbc_name [list name "INFORMIX JDBCProvider for EOS"]
+	 set jdbc_implClass [list implementationClassName "com.informix.jdbcx.IfxConnectionPoolDataSource"] 
+	 set jdbc_xa [list xa false]
+	 #set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa $jdbc_classpath]
+	 set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa ]
+	 set jdbc_provider [$AdminConfig create JDBCProvider $clusterid $jdbc_attrs] 
+	 puts "JDBCProvider created"
+ }
+ 
+ set jdbc_jaasauth $dsname
+ append jdbc_jaasauth "_info_jdbc_jaasauth"
+ set jaas_all [$AdminConfig list JAASAuthData]
+ 
+ foreach jaas $jaas_all {
+   set alias [$AdminConfig showAttribute $jaas alias]
+   if { $alias == $jdbc_jaasauth } {
+     $AdminConfig remove $jaas
+     $AdminConfig save
+   }
+ }
+
+ puts "begin to create JAASAuthData..."
+ set jaas_alias [list alias $jdbc_jaasauth] 
+ set jaas_userId [list userId $userName]
+ set jaas_password [list password $password]
+ set jaas_data [list $jaas_alias $jaas_userId $jaas_password] 
+ $AdminConfig create JAASAuthData $security_root $jaas_data
+ puts "JAASAuthData created."
+ 
+puts "Adding Authentication Alias and Schema to datastore used by Bus..."
+set jdbc_jaasauth $jdbc_jaasauth
+set datastoreIDs [$AdminConfig list SIBDatastore]
+set authAlias [list authAlias $jdbc_jaasauth]
+foreach datastoreID $datastoreIDs {
+	set schema [list schemaName $userName]
+	set attributes [list $authAlias $schema ]
+	$AdminConfig modify $datastoreID $attributes
+}
+
+ set ds_all [$AdminConfig list DataSource]
+ foreach ds_1 $ds_all {
+ set name1 [$AdminConfig showAttribute $ds_1 name]
+ if { $name1 ==$dsname } {
+        puts "info:--the $dsname exist,reconfig it."  
+		$AdminConfig remove $ds_1
+ }
+ }
+ 
+ puts "begin to create DataSource"
+ set ds_auth [list authDataAlias $jdbc_jaasauth]
+ set ds_jndi [list jndiName $jndi]
+ set ds_name [list name $dsname]
+ set ds_helper [list datasourceHelperClassname "com.ibm.websphere.rsadapter.InformixDataStoreHelper"]
+ set ds_statementCache [list statementCacheSize 10]
+ 
+ #infomix:
+ set ds_dbName [list [list name "databaseName"]  [list value $databaseName] [list type java.lang.String] [list required true]] 
+ set ds_dbServer [list [list name "serverName"] [list value $dbserverName] [list type java.lang.String] [list required true]]
+ set ds_port [list [list name "portNumber"] [list value $port] [list type java.lang.Integer] [list required true]]
+ set ds_host [list [list name "ifxIFXHOST"] [list value $host] [list type java.lang.String] [list required true]]
+ set ds_lockMode [list [list name "informixLockModeWait"] [list value $port] [list type java.lang.Integer] [list required true]]
+
+ set ds_props [list $ds_dbName $ds_dbServer $ds_port $ds_host $ds_lockMode]
+ set ds_resourceProps [list resourceProperties $ds_props]
+ set ds_resourcePropsSet [list propertySet [list $ds_resourceProps]] 
+ set ds_attrs [list $ds_name $ds_jndi $ds_auth $ds_helper $ds_statementCache $ds_resourcePropsSet] 
+ set ds [$AdminConfig create DataSource $jdbc_provider $ds_attrs] 
+ puts "DataSource created"
+ 
+ puts "begin to create ConnectionPool"  
+ set cp_minConn [list minConnections 1]
+ set cp_maxConn [list maxConnections 30]
+ set cp_attrs [list $cp_minConn $cp_maxConn]
+ set connectionPool [$AdminConfig create ConnectionPool $ds $cp_attrs] 
+ puts "Connection Pool"
+ 
+# puts "save the configuration..."
+# $AdminConfig save
+# puts "completed successfully"
+ puts "completed create DataSource"
+} 
+
+
+proc createDb2DS {clusterName driverPath databaseName dbserverName port userName password jndi dsname } {
+ puts "-----addDataSource_db2-----"
+ 
+ global AdminConfig
+ set clusterid [$AdminConfig getid "/ServerCluster:$clusterName"]
+ set security_root [$AdminConfig list Security]
+
+ set jdbc_provider [$AdminConfig getid "/ServerCluster:$clusterName/JDBCProvider:DB2 JDBCProvider for EOS"]
+ if { [llength $jdbc_provider] > 0 } {
+     puts "info:--the jdbc_provider for db2 is exist"
+ } else {
+	 puts "begin to create jdbc provider"
+	 #set jdbc_classpath [list classpath $driverPath]
+	 set jdbc_name [list name "DB2 JDBCProvider for EOS"]
+	 set jdbc_implClass [list implementationClassName "com.ibm.db2.jcc.DB2ConnectionPoolDataSource"] 
+	 set jdbc_xa [list xa false]
+	 #set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa $jdbc_classpath]
+	 set jdbc_attrs [list $jdbc_name $jdbc_implClass ]
+	 set jdbc_provider [$AdminConfig create JDBCProvider $clusterid $jdbc_attrs] 
+	 puts "JDBCProvider created"
+ }
+ 
+ set jdbc_jaasauth $dsname
+ append jdbc_jaasauth "_db2_jdbc_jaasauth"
+ 
+ set jaas_all [$AdminConfig list JAASAuthData]
+ foreach jaas $jaas_all {
+   set alias [$AdminConfig showAttribute $jaas alias]
+   if { $alias == $jdbc_jaasauth } {
+     $AdminConfig remove $jaas
+     $AdminConfig save
+   }
+ }
+
+ puts "begin to create JAASAuthData..."
+ set jaas_alias [list alias $jdbc_jaasauth] 
+ set jaas_userId [list userId $userName]
+ set jaas_password [list password $password]
+ set jaas_data [list $jaas_alias $jaas_userId $jaas_password] 
+ $AdminConfig create JAASAuthData $security_root $jaas_data
+ puts "JAASAuthData created."
+ 
+ puts "Adding Authentication Alias and Schema to datastore used by Bus..."
+set jdbc_jaasauth $jdbc_jaasauth
+set datastoreIDs [$AdminConfig list SIBDatastore]
+set authAlias [list authAlias $jdbc_jaasauth]
+foreach datastoreID $datastoreIDs {
+	set schema [list schemaName $userName]
+	set attributes [list $authAlias ]
+	$AdminConfig modify $datastoreID $attributes
+}
+ 
+ set ds_all [$AdminConfig list DataSource]
+ foreach ds_1 $ds_all {
+ set name1 [$AdminConfig showAttribute $ds_1 name]
+ if { $name1 ==$dsname } {
+        puts "info:--the $dsname exist,reconfig it."  
+		$AdminConfig remove $ds_1
+ }
+ }
+ 
+ puts "begin to create DataSource"
+ set ds_auth [list authDataAlias $jdbc_jaasauth]
+ set ds_jndi [list jndiName $jndi]
+ set ds_name [list name $dsname]
+ set ds_helper [list datasourceHelperClassname "com.ibm.websphere.rsadapter.DB2UniversalDataStoreHelper"]
+ set ds_statementCache [list statementCacheSize 10]
+ 
+
+ set ds_dbName [list [list name "databaseName"]  [list value $databaseName] [list type java.lang.String] [list required true]] 
+ set ds_dbServer [list [list name "serverName"] [list value $dbserverName] [list type java.lang.String] [list required true]]
+ set ds_port [list [list name "portNumber"] [list value $port] [list type java.lang.Integer] [list required true]]
+ set ds_dbType [list [list name "driverType"] [list value 4] [list type java.lang.String] [list required true]]
+ 
+ set ds_props [list $ds_dbName $ds_dbServer $ds_port $ds_dbType]
+ set ds_resourceProps [list resourceProperties $ds_props]
+ set ds_resourcePropsSet [list propertySet [list $ds_resourceProps]] 
+ set ds_attrs [list $ds_name $ds_jndi $ds_auth $ds_helper $ds_statementCache $ds_resourcePropsSet] 
+ set ds [$AdminConfig create DataSource $jdbc_provider $ds_attrs] 
+ puts "DataSource created"
+ 
+ puts "begin to create ConnectionPool"  
+ set cp_minConn [list minConnections 1]
+ set cp_maxConn [list maxConnections 30]
+ set cp_attrs [list $cp_minConn $cp_maxConn]
+ set connectionPool [$AdminConfig create ConnectionPool $ds $cp_attrs] 
+ puts "Connection Pool"
+
+ puts "completed create DataSource"
+} 
+
+proc createSqlserverDS {clusterName driverPath databaseName dbserverName port userName password jndi dsname } {
+ puts "-----addDataSource_sqlserver-----" 
+ 
+ global AdminConfig
+ 
+ set clusterid [$AdminConfig getid "/ServerCluster:$clusterName"]
+ set security_root [$AdminConfig list Security]
+ set jdbc_provider [$AdminConfig getid "/ServerCluster:$clusterName/JDBCProvider:SQLSERVER JDBCProvider for EOS"]
+ 
+ if { [llength $jdbc_provider] > 0 } {
+     puts "info:--the jdbc_provider for sqlserver is exist"
+ } else {
+	 puts "begin to create jdbc provider"
+	 #set jdbc_classpath [list classpath $driverPath]
+	 set jdbc_name [list name "SQLSERVER JDBCProvider for EOS"]
+	 set jdbc_implClass [list implementationClassName "com.microsoft.jdbcx.sqlserver.SQLServerDataSource"] 
+	 set jdbc_xa [list xa false]
+	 #set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa $jdbc_classpath]
+	 set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa ]
+	 set jdbc_provider [$AdminConfig create JDBCProvider $clusterid $jdbc_attrs] 
+	 puts "JDBCProvider created"
+ }
+ 
+ set jdbc_jaasauth $dsname
+ append jdbc_jaasauth "_sql_jdbc_jaasauth"
+ 
+ set jaas_all [$AdminConfig list JAASAuthData]
+ foreach jaas $jaas_all {
+   set alias [$AdminConfig showAttribute $jaas alias]
+   if { $alias == $jdbc_jaasauth } {
+     $AdminConfig remove $jaas
+     $AdminConfig save
+   }
+ }
+
+ puts "begin to create JAASAuthData..."
+ set jaas_alias [list alias $jdbc_jaasauth] 
+ set jaas_userId [list userId $userName]
+ set jaas_password [list password $password]
+ set jaas_data [list $jaas_alias $jaas_userId $jaas_password] 
+ $AdminConfig create JAASAuthData $security_root $jaas_data
+ puts "JAASAuthData created."
+ 
+ puts "Adding Authentication Alias and Schema to datastore used by Bus..."
+set jdbc_jaasauth $jdbc_jaasauth
+set datastoreIDs [$AdminConfig list SIBDatastore]
+set authAlias [list authAlias $jdbc_jaasauth]
+foreach datastoreID $datastoreIDs {
+	set schema [list schemaName $userName]
+	set attributes [list $authAlias $schema ]
+	$AdminConfig modify $datastoreID $attributes
+}
+ 
+ set ds_all [$AdminConfig list DataSource]
+ foreach ds_1 $ds_all {
+ set name1 [$AdminConfig showAttribute $ds_1 name]
+ if { $name1 ==$dsname } {
+        puts "info:--the $dsname exist,reconfig it."  
+		$AdminConfig remove $ds_1
+ }
+ }
+ 
+ puts "begin to create DataSource"
+ set ds_auth [list authDataAlias $jdbc_jaasauth]
+ set ds_jndi [list jndiName $jndi]
+ set ds_name [list name $dsname]
+ set ds_helper [list datasourceHelperClassname "com.ibm.websphere.rsadapter.ConnectJDBCDataStoreHelper"]
+ set ds_statementCache [list statementCacheSize 10]
+ 
+ set ds_dbName [list [list name "databaseName"]  [list value $databaseName] [list type java.lang.String] [list required true]] 
+ set ds_dbServer [list [list name "serverName"] [list value $dbserverName] [list type java.lang.String] [list required true]]
+ set ds_port [list [list name "portNumber"] [list value $port] [list type java.lang.Integer] [list required true]]
+ set ds_twoPhase [list [list name "enable2Phase"] [list value false] [list type java.lang.Boolean] [list required false]]
+ set ds_selectMethod [list [list name "selectMethod"] [list value cursor] [list type java.lang.String] [list required false]]
+ 
+ set ds_props [list $ds_dbName $ds_dbServer $ds_port $ds_twoPhase]
+ set ds_resourceProps [list resourceProperties $ds_props]
+ set ds_resourcePropsSet [list propertySet [list $ds_resourceProps]] 
+ set ds_attrs [list $ds_name $ds_jndi $ds_auth $ds_helper $ds_statementCache $ds_resourcePropsSet] 
+ set ds [$AdminConfig create DataSource $jdbc_provider $ds_attrs] 
+ puts "DataSource created"
+ 
+ puts "begin to create ConnectionPool"  
+ set cp_minConn [list minConnections 1]
+ set cp_maxConn [list maxConnections 30]
+ set cp_attrs [list $cp_minConn $cp_maxConn]
+ set connectionPool [$AdminConfig create ConnectionPool $ds $cp_attrs] 
+ puts "Connection Pool"
+ puts "completed create DataSource"
+} 
+
+proc createSybaseDS {clusterName driverPath databaseName dbserverName port userName password jndi dsname } {
+ puts "-----addDataSource_sybase-----"
+ global AdminConfig
+ set clusterid [$AdminConfig getid "/ServerCluster:$clusterName"]
+ set security_root [$AdminConfig list Security]
+ set jdbc_provider [$AdminConfig getid "/ServerCluster:$clusterName/JDBCProvider:SYBASE JDBCProvider for EOS"]
+ 
+ if { [llength $jdbc_provider] > 0 } {
+     puts "info:--the jdbc_provider for Sybase is exist"
+ } else {
+	 puts "begin to create jdbc provider"
+	 #set jdbc_classpath [list classpath $driverPath]
+	 set jdbc_name [list name "SYBASE JDBCProvider for EOS"]
+	 set jdbc_implClass [list implementationClassName "com.sybase.jdbc2.jdbc.SybConnectionPoolDataSource"] 
+	 set jdbc_xa [list xa false]
+	 #set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa $jdbc_classpath]
+	 set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa]
+	 set jdbc_provider [$AdminConfig create JDBCProvider $clusterid $jdbc_attrs] 
+	 puts "JDBCProvider created"
+ }
+ 
+ set jdbc_jaasauth $dsname
+ append jdbc_jaasauth "_syb_jdbc_jaasauth"
+
+ set jaas_all [$AdminConfig list JAASAuthData]
+ foreach jaas $jaas_all {
+   set alias [$AdminConfig showAttribute $jaas alias]
+   if { $alias == $jdbc_jaasauth } {
+     $AdminConfig remove $jaas
+     $AdminConfig save
+   }
+ }
+
+ puts "begin to create JAASAuthData..."
+ set jaas_alias [list alias $jdbc_jaasauth] 
+ set jaas_userId [list userId $userName]
+ set jaas_password [list password $password]
+ set jaas_data [list $jaas_alias $jaas_userId $jaas_password] 
+ $AdminConfig create JAASAuthData $security_root $jaas_data
+ puts "JAASAuthData created."
+ 
+ puts "Adding Authentication Alias and Schema to datastore used by Bus..."
+set jdbc_jaasauth $jdbc_jaasauth
+set datastoreIDs [$AdminConfig list SIBDatastore]
+set authAlias [list authAlias $jdbc_jaasauth]
+foreach datastoreID $datastoreIDs {
+	set schema [list schemaName $userName]
+	set attributes [list $authAlias $schema ]
+	$AdminConfig modify $datastoreID $attributes
+}
+ 
+ set ds_all [$AdminConfig list DataSource]
+ foreach ds_1 $ds_all {
+ set name1 [$AdminConfig showAttribute $ds_1 name]
+ if { $name1 ==$dsname } {
+        puts "info:--the $dsname exist,reconfig it."  
+		$AdminConfig remove $ds_1
+ }
+ }
+ puts "begin to create DataSource"
+ set ds_auth [list authDataAlias $jdbc_jaasauth]
+ set ds_jndi [list jndiName $jndi]
+ set ds_name [list name $dsname]
+ set ds_helper [list datasourceHelperClassname "com.ibm.websphere.rsadapter.SybaseDataStoreHelper"]
+ set ds_statementCache [list statementCacheSize 10] 
+
+ set ds_dbName [list [list name "databaseName"]  [list value $databaseName] [list type java.lang.String] [list required true]] 
+ set ds_dbServer [list [list name "serverName"] [list value $dbserverName] [list type java.lang.String] [list required true]]
+ set ds_port [list [list name "portNumber"] [list value $port] [list type java.lang.Integer] [list required true]]
+ 
+ #set ds_props [list $ds_dbName $ds_dbServer $ds_port]
+ set ds_CHARSET [list [list name "CHARSET"] [list value utf8] [list type java.lang.String] [list required false]] 
+ set ds_CURSOR [list [list name "connectionProperties"] [list value SELECT_OPENS_CURSOR=true] [list type java.lang.String] [list required false]] 
+ set ds_props [list $ds_dbName $ds_dbServer $ds_port $ds_CHARSET $ds_CURSOR]
+ 
+ set ds_resourceProps [list resourceProperties $ds_props]
+ set ds_resourcePropsSet [list propertySet [list $ds_resourceProps]] 
+ set ds_attrs [list $ds_name $ds_jndi $ds_auth $ds_helper $ds_statementCache $ds_resourcePropsSet] 
+ set ds [$AdminConfig create DataSource $jdbc_provider $ds_attrs] 
+ puts "DataSource created"
+ 
+ puts "begin to create ConnectionPool"  
+ set cp_minConn [list minConnections 1]
+ set cp_maxConn [list maxConnections 30]
+ set cp_attrs [list $cp_minConn $cp_maxConn]
+ set connectionPool [$AdminConfig create ConnectionPool $ds $cp_attrs] 
+ puts "Connection Pool"
+ puts "completed create DataSource"
+} 
+
+proc createMysqlDS {clusterName driverPath databaseName dbserverName port userName password jndi dsname } {
+ puts "-----addDataSource_mysql-----"
+ 
+ global AdminConfig
+ set clusterid [$AdminConfig getid "/ServerCluster:$clusterName"]
+ set security_root [$AdminConfig list Security]
+ set jdbc_provider [$AdminConfig getid "/ServerCluster:$clusterName/JDBCProvider:MYSQL JDBCProvider for EOS"]
+ 
+ if { [llength $jdbc_provider] > 0 } {
+     puts "info:--the jdbc_provider for Mysql is exist"
+ } else {
+	 puts "begin to create jdbc provider"
+	 #set jdbc_classpath [list classpath $driverPath]
+	 set jdbc_name [list name "MYSQL JDBCProvider for EOS"]
+	 set jdbc_implClass [list implementationClassName "com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource"] 
+	 set jdbc_xa [list xa false]
+	 #set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa $jdbc_classpath]
+	 set jdbc_attrs [list $jdbc_name $jdbc_implClass $jdbc_xa]
+	 set jdbc_provider [$AdminConfig create JDBCProvider $clusterid $jdbc_attrs] 
+	 puts "JDBCProvider created"
+ }
+ 
+ set jdbc_jaasauth $dsname
+ append jdbc_jaasauth "_mysql_jdbc_jaasauth"
+
+ set jaas_all [$AdminConfig list JAASAuthData]
+ foreach jaas $jaas_all {
+   set alias [$AdminConfig showAttribute $jaas alias]
+   if { $alias == $jdbc_jaasauth } {
+     $AdminConfig remove $jaas
+     $AdminConfig save
+   }
+ }
+
+ puts "begin to create JAASAuthData..."
+ set jaas_alias [list alias $jdbc_jaasauth] 
+ set jaas_userId [list userId $userName]
+ set jaas_password [list password $password]
+ set jaas_data [list $jaas_alias $jaas_userId $jaas_password] 
+ $AdminConfig create JAASAuthData $security_root $jaas_data
+ puts "JAASAuthData created."
+ 
+ puts "Adding Authentication Alias and Schema to datastore used by Bus..."
+set jdbc_jaasauth $jdbc_jaasauth
+set datastoreIDs [$AdminConfig list SIBDatastore]
+set authAlias [list authAlias $jdbc_jaasauth]
+foreach datastoreID $datastoreIDs {
+	set schema [list schemaName $userName]
+	set attributes [list $authAlias $schema ]
+	$AdminConfig modify $datastoreID $attributes
+}
+
+ set ds_all [$AdminConfig list DataSource]
+ foreach ds_1 $ds_all {
+ set name1 [$AdminConfig showAttribute $ds_1 name]
+ if { $name1 ==$dsname } {
+        puts "info:--the $dsname exist,reconfig it."  
+		$AdminConfig remove $ds_1
+ }
+ }
+ puts "begin to create DataSource"
+ set ds_auth [list authDataAlias $jdbc_jaasauth]
+ set ds_jndi [list jndiName $jndi]
+ set ds_name [list name $dsname]
+ set ds_helper [list datasourceHelperClassname "com.ibm.websphere.rsadapter.ConnectJDBCDataStoreHelper"]
+ set ds_statementCache [list statementCacheSize 10] 
+
+ set ds_dbName [list [list name "databaseName"]  [list value $databaseName] [list type java.lang.String] [list required true]] 
+ set ds_dbServer [list [list name "serverName"] [list value $dbserverName] [list type java.lang.String] [list required true]]
+ set ds_port [list [list name "portNumber"] [list value $port] [list type java.lang.Integer] [list required true]]
+ 
+ set ds_props [list $ds_dbName $ds_dbServer $ds_port]
+ set ds_resourceProps [list resourceProperties $ds_props]
+ set ds_resourcePropsSet [list propertySet [list $ds_resourceProps]] 
+ set ds_attrs [list $ds_name $ds_jndi $ds_auth $ds_helper $ds_statementCache $ds_resourcePropsSet] 
+ set ds [$AdminConfig create DataSource $jdbc_provider $ds_attrs] 
+ puts "DataSource created"
+ 
+ puts "begin to create ConnectionPool"  
+ set cp_minConn [list minConnections 1]
+ set cp_maxConn [list maxConnections 30]
+ set cp_attrs [list $cp_minConn $cp_maxConn]
+ set connectionPool [$AdminConfig create ConnectionPool $ds $cp_attrs] 
+ puts "Connection Pool"
+ puts "completed create DataSource"
+}
+
+
+proc createDBS { clusterName dbType driverPath dbIP dbServer dbPort dbName userName password jndi name } {
+			puts "-----dbTtype:$dbType-----driverPath:$driverPath-----"
+			if { $dbType == "oracle" } {
+				set url "jdbc:oracle:thin:@$dbIP:$dbPort:$dbName"
+  				createOracleDS $clusterName $driverPath $url $userName $password $jndi $name
+				
+	   		} elseif { [string first "db2" [string tolower $dbType]] >= 0 } {
+  	 			createDb2DS $clusterName $driverPath $dbName $dbIP $dbPort $userName $password $jndi $name
+
+	   		} elseif { $dbType == "sqlserver" } {
+				createSqlserverDS $clusterName $driverPath $dbName $dbIP $dbPort $userName $password $jndi $name
+			
+	   		} elseif { $dbType == "sybase" } {
+				createSybaseDS $clusterName $driverPath $dbName $dbIP $dbPort $userName $password $jndi $name
+
+	   		} elseif { $dbType == "informix" } {
+				createInfomixDS $clusterName $driverPath $dbName $dbServer $dbIP $dbPort $userName $password $jndi $name
+
+	   		} elseif { $dbType == "mysql" } {
+	   		    createMysqlDS $clusterName $driverPath $dbName $dbIP $dbPort $userName $password $jndi $name
+				
+			}
+}		
+
+
+
+#**********************************
+proc getClusterServers {cellname clustername dbType driverPath dbIP dbServer dbPort dbName userName password jndi name} {
+	global AdminConfig
+	global AdminControl
+	set cellId [$AdminConfig getid "/Cell:$cellname"]
+        set clusters [$AdminConfig list ServerCluster $cellId]
+        foreach cluster $clusters {
+         set clname [$AdminConfig showAttribute $cluster name]
+         if { $clname ==$clustername } {
+         set memberlist [$AdminConfig showAttribute $cluster members]
+         set members [lindex $memberlist 0]
+         foreach member $members {
+            set mname [$AdminConfig showAttribute $member memberName]
+            set weight [$AdminConfig showAttribute $member weight]
+            set serverId [$AdminConfig getid "/Server:$mname"]
+		  			set serverObj [$AdminConfig getObjectName $serverId]
+						set processType [$AdminControl getAttribute $serverObj processType]
+						set serverState [$AdminControl getAttribute $serverObj state]
+						set nodeName [$AdminControl getAttribute $serverObj nodeName]
+						if { $processType == "ManagedProcess" && $serverState == "STARTED"} {
+						puts "-----serverName:		$mname          nodeName:	$nodeName"
+						createDBS $nodeName $mname $dbType $driverPath $dbIP $dbServer $dbPort $dbName $userName $password $jndi $name
+										}   
+                 }
+         }
+         
+      }
+	
+}
+
+proc save {} {
+
+  #--------------------------------------------------------------------
+  # set up globals
+  #--------------------------------------------------------------------
+  
+  global AdminConfig
+
+  #--------------------------------------------------------------------
+  # Save all the changes
+  #--------------------------------------------------------------------
+  
+  puts "Config: Save the configuration"
+  $AdminConfig save
+  puts "------------Save successfully ------------------"
+
+}  
+#-----------------------------------------------------------------
+# Main
+#-----------------------------------------------------------------
+
+	puts "-----$argc-----"
+	if { !($argc == 12) } {
+	   puts "install: this script requires 12 parameters: clusterName, dbType, driverPath, dbIP, dbServer, dbPort, dbName, userName, password, jndi, dsname, cellName"
+	   } else { 
+	   set clusterName      [lindex $argv 0]
+	   set dbType 		[lindex $argv 1]  
+	   set driverPath 	[lindex $argv 2]
+	   set dbIP 		[lindex $argv 3]
+	   set dbServer		[lindex $argv 4]
+	   set dbPort 		[lindex $argv 5]
+	   set dbName		[lindex $argv 6]
+	   set userName 	[lindex $argv 7]
+	   set password 	[lindex $argv 8]
+	   set jndi 		[lindex $argv 9]
+	   set name 		[lindex $argv 10]
+	   set cellName 	[lindex $argv 11]
+	   puts "----------"
+	   createDBS $clusterName $dbType $driverPath $dbIP $dbServer $dbPort $dbName $userName $password $jndi $name
+	   save
+	   puts "@!Script Executed Succeed!@:add DataSource."  
+	}
