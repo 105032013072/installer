@@ -278,7 +278,7 @@ public class OptionalComponentsPanel extends AbstractSetupPanel implements TreeS
 		}
 
 		public void mouseEntered(MouseEvent e) {
-			e.getComponent().setCursor(Cursor.getPredefinedCursor(12));
+			e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		}
 	}
 }

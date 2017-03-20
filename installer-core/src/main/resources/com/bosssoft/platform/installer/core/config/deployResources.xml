@@ -9,7 +9,7 @@
 				<then>
 					<echo message="Start configuring the Tomcat datasource ..." />
 					<action name="config appsvr"
-						classname="com.primeton.installer.eos4banking.action.ConfigAppsvr"
+						classname="com.bosssoft.platform.installer.wizard.action.ConfigAppsvr"
 						desc="Config AppServer">
 						<parameter name="APPSVR_TYPE" value="Tomcat" />
 					</action>
@@ -38,7 +38,7 @@
 				<then>
 					<echo message="Start configuring the JBoss datasource ..." />
 					<action name="config appsvr"
-						classname="com.primeton.installer.eos4banking.action.ConfigAppsvr"
+						classname="com.bosssoft.platform.installer.wizard.action.ConfigAppsvr"
 						desc="Config AppServer">
 						<parameter name="APPSVR_TYPE" value="JBoss" />
 					</action>

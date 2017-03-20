@@ -152,7 +152,7 @@ public class InstallConfigLoader {
 		Element stepEle = null;
 		for (Iterator i = level1.elementIterator(); i.hasNext();) {
 			stepEle = (Element) i.next();
-			if (stepEle.getName().equals("step")) {
+			if (stepEle.getName().equals(TAG_STEP)) {
 				Step step = parseStep(stepEle);
 				installConfig.putStep(step.getID(), step);
 			}

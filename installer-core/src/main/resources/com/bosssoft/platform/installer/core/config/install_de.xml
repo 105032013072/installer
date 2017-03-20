@@ -17,7 +17,7 @@
 				<equals arg1="${IS_SILENT_INSTALL}" arg2="true" />
 				<then>
 					<action name="silent installing init"
-						classname="com.primeton.installer.eos4banking.action.SilentInit" />
+						classname="com.bosssoft.platform.installer.wizard.action.SilentInit" />
 				</then>
 			</if>
 			<action name="init install"
@@ -67,11 +67,11 @@
 		</step>
 		<step id="06" desc="OptionComponents"
 			interceptor="com.bosssoft.platform.installer.wizard.event.OptionalComponentsInterceptor">
-			<gui setuppanel="com.primeton.installer.eos4banking.gui.OptionalComponentsPanel" />
+			<gui setuppanel="com.bosssoft.platform.installer.wizard.gui.OptionalComponentsPanel" />
 			<nextstep default="08" />
 		</step>
 		<step id="07" desc="AdministratorInfo">
-			<gui setuppanel="com.primeton.installer.eos4banking.gui.AdminInfoPanel" />
+			<gui setuppanel="com.bosssoft.platform.installer.wizard.gui.AdminInfoPanel" />
 			<nextstep default="08" />
 		</step>
 		<step id="08" desc="IPPort4Management">
@@ -80,7 +80,7 @@
 		</step>
 		<step id="09" desc="AppsOption">
 			<gui
-				setuppanel="com.primeton.installer.eos4banking.gui.InstallApplicationDEPanel" />
+				setuppanel="com.bosssoft.platform.installer.wizard.gui.InstallApplicationDEPanel" />
 			<nextstep default="10" />
 		</step>
 		<step id="10" desc="ConfigDatasource">
@@ -88,7 +88,7 @@
 			<nextstep default="11" />
 		</step>
 		<step id="11" desc="DigestInfo">
-			<gui setuppanel="com.primeton.installer.eos4banking.gui.DigestPanel" />
+			<gui setuppanel="com.bosssoft.platform.installer.wizard.gui.DigestPanel" />
 			<nextstep default="12" />
 		</step>
 		<step id="12" desc="Installing" auto="true">
@@ -118,7 +118,7 @@
 			dest="${INSTALL_DIR}/apache-tomcat-7.0.54" scale="30" />
 		<echo message="...... update tomcat http port" />
 		<action name="update tomcat port"
-			classname="com.primeton.installer.eos4banking.action.UpdateTomcatPort"
+			classname="com.bosssoft.platform.installer.wizard.action.UpdateTomcatPort"
 			desc="Update Tomcat Http Port" scale="5">
 			<parameter name="SERVER_XML_PATH" value="${AS_TOMCAT_HOME}/conf/server.xml" />
 			<parameter name="TOMCAT_PORT" value="${APP_SERVER_PORT_DE}" />
@@ -137,7 +137,7 @@
 			<parameter name="APPSVR_TYPE" value="${APP_SERVER_TYPE}" />
 		</action>
 		<action name="config appsvr"
-			classname="com.primeton.installer.eos4banking.action.ConfigAppsvr"
+			classname="com.bosssoft.platform.installer.wizard.action.ConfigAppsvr"
 			desc="Config AppServer" scale="10">
 			<parameter name="APPSVR_TYPE" value="${APP_SERVER_TYPE}" />
 		</action>
@@ -152,16 +152,16 @@
 			<equals arg1="${DB_IS_INIT}" arg2="true" />
 			<then>
 				<action name="init Database"
-					classname="com.primeton.installer.eos4banking.action.InitDB" desc=""
+					classname="com.bosssoft.platform.installer.wizard.action.InitDB" desc=""
 					scale="10">
 					<parameter name="COMPONENT_NAMES" value="server,cap" />
 				</action>
 			</then>
 		</if>
-		<action name="deploy base components" classname="com.primeton.install.action.DeployBaseComps"
+		<action name="deploy base components" classname="com.bosssoft.platform.installer.core.action.DeployBaseComps"
 			desc="Deploy base components" scale="60">
 		</action>
-		<action name="deploy option components" classname="com.primeton.install.action.DeployOptionComps"
+		<action name="deploy option components" classname="com.bosssoft.platform.installer.core.action.DeployOptionComps"
 			desc="Deploy option components" scale="60">
 		</action>
 		<echo
@@ -175,13 +175,13 @@
 		</action>
 		<echo message="...... create shortcut" />
 		<action name="create shortcut"
-			classname="com.primeton.installer.eos4banking.action.CreateShortcut"
+			classname="com.bosssoft.platform.installer.wizard.action.CreateShortcut"
 			desc="Start Menu">
 			<parameter name="KEYWORD" value="Platform" />
 		</action>
 		<echo message="...... register product" />
 		<action name="register this"
-			classname="com.primeton.installer.eos4banking.action.RegisterProduct"
+			classname="com.bosssoft.platform.installer.wizard.action.RegisterProduct"
 			desc="Register Product">
 		</action>
 		<!-- 创建开始菜单产品卸载快捷方式 -->
@@ -194,7 +194,7 @@
 		</action>
 		<echo message="...... export context for validate" />
 		<action name="export context 4 validate"
-			classname="com.primeton.installer.eos4banking.action.ExportContext2Properties"
+			classname="com.bosssoft.platform.installer.wizard.action.ExportContext2Properties"
 			desc="export context">
 			<parameter name="EXPORT_FILE" value="${INSTALL_DIR}/install-context.properties" />
 		</action>
