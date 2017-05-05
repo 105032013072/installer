@@ -99,6 +99,8 @@ public class LicenseViewPanel extends AbstractSetupPanel implements ActionListen
 	public void beforePrevious() {
 	}
 
+	//设置不接受时：下一步按钮不可用        接收：下一步按钮可用
+   //读取许可证内容
 	public void beforeShow() {
 		this.licenseLabel.setText(getLabelText());
 

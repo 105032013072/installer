@@ -52,7 +52,7 @@ public class ChooseIPPanel extends AbstractSetupPanel {
 			ex.printStackTrace();
 		}
 	}
-
+	//读取支持的IP列表（空方法）
 	void jbInit() throws Exception {
 		setLayout(this.borderLayout1);
 		setOpaque(false);
@@ -95,6 +95,7 @@ public class ChooseIPPanel extends AbstractSetupPanel {
 	public void afterShow() {
 	}
 
+	//IP和端口加入到context中
 	public void beforeNext() {
 		String asIP = (String) this.cbxIP.getSelectedItem();
 		if ((asIP == null) || (asIP.equals("")))
@@ -106,6 +107,7 @@ public class ChooseIPPanel extends AbstractSetupPanel {
 	public void beforePrevious() {
 	}
 
+	//设置下拉列表的可选IP
 	public void beforeShow() {
 		AbstractControlPanel controlPane = MainFrameController.getControlPanel();
 		controlPane.setButtonVisible("finish", false);

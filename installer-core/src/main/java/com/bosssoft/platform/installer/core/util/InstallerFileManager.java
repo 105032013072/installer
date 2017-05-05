@@ -2,6 +2,7 @@ package com.bosssoft.platform.installer.core.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 public class InstallerFileManager {
 	private static String installerRoot = null;
@@ -10,7 +11,7 @@ public class InstallerFileManager {
 
 	private static String imageDir = installerHome.concat("/image");
 	private static String configDir = installerHome.concat("/config");
-
+    private static String loggerDir=installerHome.concat("/logging");
 	private static String resourcesDir = getInstallerRoot().concat("/resources");
 	private static String baseCompsDir = resourcesDir + "/base_comps";
 	private static String optionCompsDir = resourcesDir + "/option_comps";
@@ -18,23 +19,23 @@ public class InstallerFileManager {
 	private static String jdkDir = commonCompsDir + "/jdk";
 
 	private static String getInstallerHomePath() {
-		String path = System.getProperty("install.home");
+		String path=null;
 		try {
-			if (path == null)
-				path = PathUtil.getFullPathRelateClass("../", InstallerFileManager.class);
-		} catch (IOException e) {
+			path=Thread.currentThread().getContextClassLoader().getResource("").toURI().getPath();
+		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
-
 		return path;
 	}
 
 	public static String getInstallerRoot() {
-		if (installerRoot == null) {
-			File file = new File(installerHome);
-			installerRoot = file.getParentFile().getAbsolutePath();
+		String path=null;
+		try {
+			path=Thread.currentThread().getContextClassLoader().getResource("").toURI().getPath();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
 		}
-		return installerRoot;
+		return path;
 	}
 
 	public static String getInstallerHome() {
@@ -67,6 +68,10 @@ public class InstallerFileManager {
 
 	public static String getJDKDir() {
 		return jdkDir;
+	}
+	
+	public static String getLoggerDir(){
+		return loggerDir;
 	}
 
 	public static File getConfigFile(String fileName) {

@@ -103,7 +103,7 @@
 	<actions id="install">
 		<mkdir dir="${INSTALL_DIR}" />
 		<setvalue key="AS_TOMCAT_HOME" value="${INSTALL_DIR}/apache-tomcat-7.0.54" />
-		<unzip src="${INSTALL_ROOT}/resources/public_comps/jdk/1.5/jdk.zip"
+		<unzip src="${INSTALL_ROOT}/resources/public_comps/jdk/1.8/jdk.zip"
 			dest="${INSTALL_DIR}/ide/eclipse/jre" scale="10" />
 		<setvalue key="JAVA_HOME" value="${INSTALL_DIR}/ide/eclipse/jre" />
 		<setvalue key="IS_DEPLOY_GOVERNOR" value="true" />

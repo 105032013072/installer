@@ -23,7 +23,7 @@ public class IntroductionPanel extends AbstractSetupPanel {
 			ex.printStackTrace();
 		}
 	}
-
+	//文本信息 所在位置core/i18n/common_installer_zh_CN.properties
 	void jbInit() throws Exception {
 		setLayout(null);
 

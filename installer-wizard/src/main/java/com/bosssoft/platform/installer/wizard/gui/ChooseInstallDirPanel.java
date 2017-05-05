@@ -115,6 +115,7 @@ public class ChooseInstallDirPanel extends AbstractSetupPanel implements ActionL
 	public void afterShow() {
 	}
 
+	 //获取安装路径，将值存到content中
 	public void beforeNext() {
 		String dir = this.tfdDir.getText().trim();
 		if (dir.endsWith(File.separator))
@@ -286,6 +287,7 @@ public class ChooseInstallDirPanel extends AbstractSetupPanel implements ActionL
 			this.tfdDir.setText(this.dirChooser.getSelectedFile().getPath());
 	}
 
+	//磁盘空间是否足够
 	public void afterActions() {
 		if (getContext().getStringValue("INSTALL_SPACE_ENOUGH").equalsIgnoreCase("false"))
 			MainFrameController.showMessageDialog(I18nUtil.getString("DISK.SPACE.MSG"), I18nUtil.getString("DIALOG.TITLE.INFO"), 0);

@@ -9,6 +9,7 @@ import com.bosssoft.platform.installer.core.action.IAction;
 import com.bosssoft.platform.installer.wizard.util.JDBCURLUtil;
 
 public class SilentInit implements IAction {
+	//根据silent_install.properties中的配置，拼接对应数据库的URL，将值存到context中
 	public void execute(IContext context, Map parameters) throws InstallException {
 		String dbURL = getJDBCURL(context);
 		context.setValue("DB_URL", dbURL);

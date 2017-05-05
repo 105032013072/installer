@@ -45,6 +45,7 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 		}
 	}
 
+	//加载支持的数据库列表，添加默认选中的数据库的编辑面板
 	void jbInit() throws Exception {
 		setOpaque(false);
 		setLayout(null);
@@ -78,6 +79,7 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 	public void afterShow() {
 	}
 
+	//将数据库配置信息保存到context中
 	public void beforeNext() {
 		if (this.dbEditorPanel != null) {
 			Properties properties = this.dbEditorPanel.getProperties();

@@ -50,6 +50,7 @@ public class AppSvrPanel extends AbstractSetupPanel implements ActionListener {
 		}
 	}
 
+	//初始化界面（读取支持的服务器列表：appsver-supported文件）
 	void jbInit() throws Exception {
 		setLayout(null);
 		setOpaque(false);

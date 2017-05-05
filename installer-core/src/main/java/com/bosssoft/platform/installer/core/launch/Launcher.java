@@ -53,6 +53,7 @@ public class Launcher implements Constants {
 		if (!isValidFilePath(configFilePath)) {
 			throw new LaunchException("Config File is not File or not exist!" + configFilePath);
 		}
+		//加载core中的配置文件 install.xml
 		InstallConfig installConfig = null;
 		try {
 			installConfig = InstallConfigLoader.loadConfig(configFilePath);
@@ -76,10 +77,16 @@ public class Launcher implements Constants {
 				runtime.getContext().setValue("INSTALL_LOGFILE_NAME", logPath.substring(logPath.lastIndexOf("/") + 1));
 			}
 
+			//将操作系统信息放到context中
+			putosinfo2Context(runtime.getContext());
+			
+			//将install.xml中<variable>(变量添加到)context中
 			putVariable2Context(installConfig, runtime.getContext());
 
+			//从install.xml中获取产品属性文件的位置<loadproperties>值即为文件名，加载该文件，将该文件中的属性添加到context中。
 			loadProperties2Context(installConfig, runtime.getContext());
 
+			//注册监听器
 			registerListener(installConfig, runtime);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -97,6 +104,7 @@ public class Launcher implements Constants {
 			throw new LaunchException(e.getMessage());
 		}
 
+		//设置根据install.xml的配置渲染器（UI）
 		String rendererClassname = installConfig.getRenderer();
 		if (rendererClassname == null)
 			rendererClassname = DEFAULT_RENDERER_CLASS;
@@ -107,11 +115,15 @@ public class Launcher implements Constants {
 			throw new LaunchException(e.getMessage());
 		}
 
+		//i18n文件夹下资源
 		loadI18nProperties();
 
+		//设置安装模式界面/盲安装
 		String runmode = System.getProperty("install.runmode");
 		if (runmode == null)
-			runmode = "swing";
+			if("true".equals(runtime.getContext().getStringValue("IS_WINDOWS")))
+			  runmode = "swing";
+			else runmode ="silent";
 		else {
 			runmode = runmode.toLowerCase();
 		}
@@ -125,6 +137,13 @@ public class Launcher implements Constants {
 		}
 
 		runner.execute();
+	}
+
+	private void putosinfo2Context(IContext context) {
+		String osName=System.getProperty("os.name").toLowerCase();
+		if (osName.indexOf("window") < 0) context.setValue("IS_WINDOWS", false);
+		else context.setValue("IS_WINDOWS", true);
+		/*context.setValue("IS_WINDOWS", false);*/	
 	}
 
 	private void loadProperties2Context(InstallConfig installConfig, IContext context) throws IOException {
@@ -207,7 +226,7 @@ public class Launcher implements Constants {
 			logfile.delete();
 
 		Properties properties = new Properties();
-		String configPath = InstallerFileManager.getConfigDir() + "/log4j.properties";
+		String configPath = InstallerFileManager.getLoggerDir() + "/log4j.properties";
 		try {
 			properties.load(new FileInputStream(configPath));
 		} catch (IOException e) {

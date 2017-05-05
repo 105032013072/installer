@@ -33,8 +33,9 @@ public class SilentRunner extends AbstractRunner {
 		InstallRuntime.INSTANCE.getContext().setValue("IS_SILENT_INSTALL", "true");
 	}
 
+	//加载安装配置（/core/silent_install.properties）
 	protected void init() {
-		String silentConfigPath = InstallerFileManager.getInstallerHome() + File.separator + DEFAULT_CONFIG_FILE_NAME;
+		String silentConfigPath = InstallerFileManager.getConfigDir() + File.separator + DEFAULT_CONFIG_FILE_NAME;
 
 		Properties propers = new Properties();
 		FileInputStream inStream = null;
@@ -135,6 +136,7 @@ public class SilentRunner extends AbstractRunner {
 		gotoNextStep(this.currentStep);
 	}
 
+	//判断是否有拦截器拦截
 	private void gotoNextStep(Step step) {
 		String nextStepID = getNextStepID(step);
 

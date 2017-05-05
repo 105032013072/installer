@@ -181,8 +181,8 @@ public class StepListSetupPanel extends AbstractSetupPanel {
 
 		public class LabelListCellRenderer implements ListCellRenderer {
 			private Icon iconToInstall = new BlankIcon(new Dimension(15, 15));
-			private ImageIcon iconInstalling = new ImageIcon(StepListSetupPanel.this.getClass().getResource("installing.gif"));
-			private ImageIcon iconInstalled = new ImageIcon(StepListSetupPanel.this.getClass().getResource("installed.gif"));
+			private ImageIcon iconInstalling = new ImageIcon(Thread.currentThread().getContextClassLoader().getResource("image/installing.gif"));
+			private ImageIcon iconInstalled = new ImageIcon(Thread.currentThread().getContextClassLoader().getResource("image/installed.gif"));
 
 			protected Border m_noFocusBorder = BorderFactory.createEmptyBorder(5, 10, 5, 0);
 

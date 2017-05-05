@@ -145,8 +145,10 @@ public class SwingRunner extends AbstractRunner implements ICommandListener {
 
 	private void next() {
 		if (this.currentStep.hasGUI()) {
+			//合法性检验  
 			if ((this.currentSetupPanel != null) && (!this.currentSetupPanel.checkInput()))
 				return;
+			//将该步骤配置的信息操作到context中
 			if (this.currentSetupPanel != null)
 				this.currentSetupPanel.beforeNext();
 		}
@@ -321,7 +323,7 @@ public class SwingRunner extends AbstractRunner implements ICommandListener {
 	}
 
 	protected void init() {
-		this.frame = new InstallFrame();
+		this.frame = new InstallFrame();//构造函数中初始化UI
 		MainFrameController.setFrameInstance(this.frame);
 
 		if (this.installConfig.getDimension() == null)
@@ -373,7 +375,7 @@ public class SwingRunner extends AbstractRunner implements ICommandListener {
 			this.currentSetupPanel.afterActions();
 		gotoNextStep(this.currentStep);
 	}
-
+	//读取该步骤的拦截器，使用拦截器判断是否满足某种情况，若是不满足则跳过该步骤，直接进入下一步
 	private void gotoNextStep(Step step) {
 		String nextStepID = getNextStepID(step);
 
@@ -525,6 +527,7 @@ public class SwingRunner extends AbstractRunner implements ICommandListener {
 			notify();
 		}
 
+		//执行安装步骤中的一系列动作
 		public void run() {
 			AbstractAction action = null;
 			Map parameters = null;
