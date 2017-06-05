@@ -143,7 +143,7 @@ public class Launcher implements Constants {
 		String osName=System.getProperty("os.name").toLowerCase();
 		if (osName.indexOf("window") < 0) context.setValue("IS_WINDOWS", false);
 		else context.setValue("IS_WINDOWS", true);
-		/*context.setValue("IS_WINDOWS", false);*/	
+		/*context.setValue("IS_WINDOWS", false);*/
 	}
 
 	private void loadProperties2Context(InstallConfig installConfig, IContext context) throws IOException {

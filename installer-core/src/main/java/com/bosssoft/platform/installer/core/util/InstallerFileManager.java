@@ -12,7 +12,7 @@ public class InstallerFileManager {
 	private static String imageDir = installerHome.concat("/image");
 	private static String configDir = installerHome.concat("/config");
     private static String loggerDir=installerHome.concat("/logging");
-	private static String resourcesDir = getInstallerRoot().concat("/resources");
+	private static String resourcesDir = getInstallerRoot();
 	private static String baseCompsDir = resourcesDir + "/base_comps";
 	private static String optionCompsDir = resourcesDir + "/option_comps";
 	private static String commonCompsDir = resourcesDir + "/common_comps";

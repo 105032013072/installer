@@ -3,7 +3,12 @@ package com.bosssoft.platform.installer.wizard.gui.as;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.File;
+import java.util.Iterator;
 import java.util.Properties;
 
 import javax.swing.JLabel;
@@ -13,15 +18,19 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.apache.commons.lang.StringUtils;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.w3c.dom.Element;
 
+import com.bosssoft.platform.installer.wizard.util.XmlUtil;
+import com.bosssoft.platform.installer.core.MainFrameController;
 import com.bosssoft.platform.installer.core.util.I18nUtil;
 import com.bosssoft.platform.installer.io.xml.XmlFile;
 import com.bosssoft.platform.installer.wizard.gui.AbstractASEditorPanel;
 import com.bosssoft.platform.installer.wizard.gui.component.XFileChooser;
 import com.bosssoft.platform.installer.wizard.gui.validate.ValidatorHelper;
 
-public class WLEditorPanel extends AbstractASEditorPanel {
+public class WLEditorPanel extends AbstractASEditorPanel implements ActionListener,FocusListener{
 	private static final long serialVersionUID = 3982484775483532865L;
 	private JLabel lbBeaHome = new JLabel();
 
@@ -131,6 +140,8 @@ public class WLEditorPanel extends AbstractASEditorPanel {
 		constraints.fill = 2;
 		constraints.weightx = 1.0D;
 		this.xfcDomainHome.setButtonText(I18nUtil.getString("BUTTON.BROWSE2"));
+		xfcDomainHome.addActionListener(this);
+		xfcDomainHome.getTextField().addFocusListener(this);;
 		add(this.xfcDomainHome, constraints);
 
 		JLabel lbLoginName = new JLabel();
@@ -153,6 +164,7 @@ public class WLEditorPanel extends AbstractASEditorPanel {
 		constraints.anchor = 18;
 		constraints.fill = 2;
 		constraints.weightx = 1.0D;
+	
 		add(this.txLoginName, constraints);
 
 		JLabel lbPassword = new JLabel();
@@ -197,6 +209,7 @@ public class WLEditorPanel extends AbstractASEditorPanel {
 		constraints.fill = 2;
 		constraints.weightx = 1.0D;
 		this.cbTarget.setText("AdminServer");
+		this.cbTarget.addFocusListener(this);
 		add(this.cbTarget, constraints);
 
 		constraints = new GridBagConstraints();
@@ -220,7 +233,7 @@ public class WLEditorPanel extends AbstractASEditorPanel {
 		constraints.anchor = 18;
 		constraints.fill = 2;
 		constraints.weightx = (constraints.weighty = 1.0D);
-		this.txPort.setText("7001");
+		/*this.txPort.setText("7001");*/
 		add(this.txPort, constraints);
 		setOpaque(false);
 	}
@@ -296,11 +309,61 @@ public class WLEditorPanel extends AbstractASEditorPanel {
 		properties.setProperty("AS_WL_BEA_HOME", this.xfcBeaHome.getText());
 		properties.setProperty("AS_WL_HOME", this.xfcWLHome.getText());
 		properties.setProperty("AS_WL_DOMAIN_HOME", this.xfcDomainHome.getText());
-		properties.setProperty("AS_WL_WEBSVR_PORT", this.txPort.getText());
+		properties.setProperty("APP_SERVER_PORT", this.txPort.getText());
 		properties.setProperty("AS_WL_TARGET_SERVER", this.cbTarget.getText());
 		properties.setProperty("AS_WL_USERNAME", this.txLoginName.getText());
 		properties.setProperty("AS_WL_PASSWORD", this.txPassword.getText());
-
+		properties.put("APP_SERVER_DEPLOY_DIR", this.xfcDomainHome.getText()+File.separator+"autodeploy");
 		return properties;
 	}
+
+	public void actionPerformed(ActionEvent arg0) {
+			
+			setPort();
+		
+	}
+
+   public void focusGained(FocusEvent e) {
+		
+		
+	}
+
+	public void focusLost(FocusEvent e) {
+         
+			setPort();
+	}
+
+	private void setPort() {
+		String wlhome=this.xfcDomainHome.getText();
+		String serverName=this.cbTarget.getText();
+		String serverConf=wlhome + File.separator + "config" + File.separator + "config.xml";
+		String port=null;
+		if(new File(serverConf).exists()) {
+		  try{
+			  Document doc = XmlUtil.getDocument(new File(serverConf));
+				Elements servers = XmlUtil.findElements(doc, "server");
+				Iterator<org.jsoup.nodes.Element> it=servers.iterator();
+				while(it.hasNext()){
+					org.jsoup.nodes.Element element=it.next();
+					String name=element.select("name").text();
+					if(serverName.equals(name)){
+						String portStr =element.select("listen-port").text();
+						if (portStr != null) {
+							port=portStr.trim();
+							
+						}
+						port="7001";
+					}
+				}
+				
+				
+	   }catch(Exception e){
+		e.printStackTrace();
+	   }
+   }else MainFrameController.showMessageDialog("weblogic "+I18nUtil.getString("APPSVR.CONF.ERROR"), I18nUtil.getString("DIALOG.TITLE.ERROR"), 0);
+		 this.txPort.setText(port);
+		this.txPort.setEditable(false);
+	}
+
+	
 }

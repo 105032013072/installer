@@ -54,7 +54,7 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 
 		this.lblDataSourceName.setText(I18nUtil.getString("STEP.DATASOURCE.NAME"));
 		this.lblDataSourceName.setBounds(new Rectangle(30, 38, 130, 16));
-		this.tfdDataSourceName.setText("DefaultDataSource");
+		this.tfdDataSourceName.setText("defaultDataSource");
 		this.tfdDataSourceName.setBounds(new Rectangle(162, 35, 240, 20));
 
 		this.lblDB.setText(I18nUtil.getString("DBCONFIG.LABEL.DBTYPE"));

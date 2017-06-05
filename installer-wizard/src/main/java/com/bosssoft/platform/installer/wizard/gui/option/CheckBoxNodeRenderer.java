@@ -21,6 +21,7 @@ import javax.swing.tree.TreeCellRenderer;
 
 import com.bosssoft.platform.installer.core.option.CompDef;
 import com.bosssoft.platform.installer.core.option.ComponentsDefHelper;
+import com.bosssoft.platform.installer.core.util.InstallerFileManager;
 
 public class CheckBoxNodeRenderer implements TreeCellRenderer {
 	private JCheckBox optionRenderer = new JCheckBox();
@@ -114,7 +115,8 @@ public class CheckBoxNodeRenderer implements TreeCellRenderer {
 	private Component getRequiredCellRenderer(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 		this.requiredRender.setText(value.toString());
 		this.requiredRender.setOpaque(true);
-		this.requiredRender.setIcon(new ImageIcon(getClass().getResource("checked.gif")));
+		//this.requiredRender.setIcon(new ImageIcon(getClass().getResource("checked.gif")));
+		this.requiredRender.setIcon(new ImageIcon(InstallerFileManager.getImageDir()+"/checked.gif"));
 		return this.requiredRender;
 	}
 
