@@ -571,6 +571,7 @@ public class SwingRunner extends AbstractRunner implements ICommandListener {
 						action.execute(context, parameters);
 						MessageManager.syncSendWorked(action.toString(), progressPercent);
 					} catch (Throwable ex) {
+						ex.printStackTrace();
 						this.runLogger.error(ex.getMessage(), ex);
 						String msg = null;
 
