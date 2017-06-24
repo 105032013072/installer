@@ -282,6 +282,7 @@ public class SwingRunner extends AbstractRunner implements ICommandListener {
 	}
 
 	private void rollback() {
+		
 	}
 
 	private void setupUI(Step step) {

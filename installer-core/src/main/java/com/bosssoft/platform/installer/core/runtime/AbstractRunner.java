@@ -66,6 +66,8 @@ public abstract class AbstractRunner
     String discriminator = step.getNextStepDiscriminator();
     if (discriminator != null)
     {
+      Object obj=InstallRuntime.INSTANCE.getContext().getVariableValue(discriminator);//mytest
+    		  
       String branch = InstallRuntime.INSTANCE.getContext().getVariableValue(discriminator).toString();
       nextStepID = this.installConfig.getStep(step.getID()).getNextTaskID(branch);
       if (nextStepID == null)

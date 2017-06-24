@@ -84,8 +84,9 @@ public class SetVersion implements IAction{
 	    root.addElement("deployDir").addText(context.getStringValue("APP_SERVER_DEPLOY_DIR"));
 	    root.addElement("serverPort").addText(context.getStringValue("APP_SERVER_PORT"));
 			try{
-				 OutputFormat format = new OutputFormat("    ",true);
+				OutputFormat format =OutputFormat.createPrettyPrint(); 
 				  format.setEncoding("utf-8");//设置编码格式  
+				  format.setNewLineAfterDeclaration(false);
 			    XMLWriter xmlWriter = new XMLWriter(new FileOutputStream(productVFile),format);
 
 			     xmlWriter.write(document);
