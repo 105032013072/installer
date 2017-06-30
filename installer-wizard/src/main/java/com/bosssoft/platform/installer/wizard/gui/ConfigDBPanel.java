@@ -81,6 +81,7 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 
 	//将数据库配置信息保存到context中
 	public void beforeNext() {
+	
 		if (this.dbEditorPanel != null) {
 			Properties properties = this.dbEditorPanel.getProperties();
 			getContext().putAll(properties);

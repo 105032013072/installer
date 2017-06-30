@@ -61,7 +61,8 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 	protected JPasswordField tfdPassword = new JPasswordField();
 	protected JTextField tfdUser = new JTextField();
 	protected XFileChooser fileChooser = new XFileChooser();
-
+	protected XFileChooser SqlScriptChooser=new XFileChooser();
+	
 	protected TxtDocumentListener documentListener = new TxtDocumentListener();
 	private EditorActionListener actionListener = new EditorActionListener();
 	private IContext context = null;
@@ -91,7 +92,7 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 		this.tfdIP.setBounds(new Rectangle(133, 0, 237, 21));
 		this.tfdIP.setText("127.0.0.1");
 		this.lblDbDriver.setBounds(new Rectangle(18, 206, 87, 16));
-		this.btnDBTest.setBounds(new Rectangle(250, 232, 120, 21));
+		this.btnDBTest.setBounds(new Rectangle(260, 270, 120, 21));
 		this.chkUserDbDriver.setBounds(new Rectangle(0, 174, 130, 25));
 		this.tfdPort.setBounds(new Rectangle(133, 29, 54, 21));
 		this.cbxDrivers.setBounds(new Rectangle(133, 205, 237, 21));
@@ -126,6 +127,11 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 		this.fileChooser.setButtonmnMnemonic('R');
 		this.fileChooser.setEnabled(false);
 		this.fileChooser.setBounds(new Rectangle(133, 176, 237, 21));
+		
+		this.SqlScriptChooser.setButtonText(I18nUtil.getString("BUTTON.BROWSE"));
+		this.SqlScriptChooser.setButtonmnMnemonic('R');
+		this.SqlScriptChooser.setEnabled(false);
+		this.SqlScriptChooser.setBounds(new Rectangle(133, 235, 237, 21));
 		add(this.lblPort, null);
 		add(this.tfdSID, null);
 		add(this.tfdPort, null);
@@ -145,10 +151,14 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 		add(this.lblSID, null);
 		add(this.tfdIP, null);
 		add(this.lblIP, null);
+		add(this.SqlScriptChooser,null);
 
 		this.fileChooser.setFileSelectionMode(0);
 		this.fileChooser.setMultiSelectionEnabled(true);
 
+		this.SqlScriptChooser.setFileSelectionMode(0);
+		this.SqlScriptChooser.setMultiSelectionEnabled(true);
+		
 		this.tfdUser.getDocument().addDocumentListener(this.documentListener);
 		this.tfdPassword.getDocument().addDocumentListener(this.documentListener);
 		this.tfdIP.getDocument().addDocumentListener(this.documentListener);
@@ -176,6 +186,10 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 		this.fileChooser.setEnabled(this.chkUserDbDriver.isSelected());
 		this.cbxDrivers.setEnabled(this.chkUserDbDriver.isSelected());
 	}
+	
+     public void refreshLoadSqlScript() {
+        this.SqlScriptChooser.setEnabled(this.chkInitDB.isSelected());
+	 }
 
 	public void loadJDBCDriverFromFile() {
 		File[] files = this.fileChooser.getSelectedFiles();
@@ -269,6 +283,15 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 			p.put("DB_JDBC_LIBS", "");
 		}
 
+		if(this.chkInitDB.isSelected()){
+			StringBuffer strFiles=new StringBuffer();
+			File[] files=SqlScriptChooser.getSelectedFiles();
+			for (File file : files) {
+				strFiles.append(file.getPath()+",");
+			}
+			p.put("DB_INIT_SQLSCRIPT", strFiles.toString());
+		}
+		
 		return p;
 	}
 
@@ -356,6 +379,12 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 			int dialog_result = MainFrameController.showConfirmDialog(msg, I18nUtil.getString("DIALOG.TITLE.WARNING"), 0, 2);
 			return dialog_result == 0;
 		}
+		
+		//确认数据库是否进行初始化
+		if(chkInitDB.isSelected()){
+			int dialog_result=MainFrameController.showConfirmDialog(I18nUtil.getString("INITDB.SURE"), I18nUtil.getString("DIALOG.TITLE.WARNING"), 0, 2);
+		    return dialog_result==0;
+		}
 
 		return true;
 	}
@@ -380,6 +409,7 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 				AbstractDBEditorPanel.this.loadJDBCDriverFromFile();
 			} else if (AbstractDBEditorPanel.this.chkInitDB == source) {
 				AbstractDBEditorPanel.this.resetTabSpaceText();
+				AbstractDBEditorPanel.this.refreshLoadSqlScript();
 			} else if (AbstractDBEditorPanel.this.chkUserDbDriver == source) {
 				AbstractDBEditorPanel.this.refreshLoadUserDriver();
 			} else if (AbstractDBEditorPanel.this.btnDBTest == source) {
