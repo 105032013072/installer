@@ -19,11 +19,11 @@ public class InitDBSqlScript implements IAction{
 	public void execute(IContext context, Map params) throws InstallException {
 		Connection connection=getConnection(context);
 		SqlScriptRunner runner=new SqlScriptRunner();
-		if(connection==null) 
-			MainFrameController.showConfirmDialog("数据库连接对象为空，无法进行数据库初始化，是否继续", I18nUtil.getString("DIALOG.TITLE.WARNING"), 0, 2);
-		
+		if(connection==null) {
+			int result=MainFrameController.showConfirmDialog("数据库连接对象为空，无法进行数据库初始化，是否继续", I18nUtil.getString("DIALOG.TITLE.WARNING"), 0, 2);
+		   if(result==1) System.exit(0);
+		}
 		runner.run(connection,context);
-		
 	}
 
 	private Connection getConnection(IContext context) {
