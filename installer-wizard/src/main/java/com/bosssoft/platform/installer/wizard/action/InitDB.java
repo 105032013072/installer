@@ -48,7 +48,7 @@ public class InitDB implements IAction {
 		Object[] args = { connection, "" };
 		Class[] argsClass = { Connection.class, String.class };
 		try {
-			Class ownerClass = Class.forName("com.primeton.governor.dbinit.impl.DatabaseInitializerImpl");
+			Class ownerClass = Class.forName("com.bosssoft.platform.installer.core.initdb.DatabaseInitializerImpl");
 			Method method = ownerClass.getMethod("isInitialized", argsClass);
 			Object rtn = method.invoke(ownerClass.newInstance(), args);
 			return ((Boolean) rtn).booleanValue();

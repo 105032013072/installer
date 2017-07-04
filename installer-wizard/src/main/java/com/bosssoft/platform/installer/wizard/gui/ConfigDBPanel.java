@@ -91,12 +91,11 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 			getContext().setValue("DB_VERSION", dbServer.getVersion());
 
 			getContext().setValue("DB_DS_JNDI_NAME", this.tfdDataSourceName.getText().trim());
-		}
 		
-		//记录日志
-		Logger logger = Logger.getLogger(getClass());
-	    String str="config DB:"+this.dbEditorPanel.getProperties();
-	    System.out.println(str);
+			//记录日志
+		   logger.info("config DB: "+properties);
+		
+		}
 	}
 
 	public void beforePrevious() {
