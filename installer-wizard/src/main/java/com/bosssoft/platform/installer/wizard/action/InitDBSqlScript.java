@@ -32,7 +32,7 @@ public class InitDBSqlScript implements IAction{
 		try {
 			conn = DBConnectionUtil.getConnection(userJdbcJars, driver, url, user, password);
 		} catch (Exception e) {
-			logger.error(e);
+			throw new InstallException("faild to get DB conection "+e);
 		}
 		return conn;
 	}
