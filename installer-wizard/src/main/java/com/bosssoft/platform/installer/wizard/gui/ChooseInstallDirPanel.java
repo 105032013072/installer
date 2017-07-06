@@ -16,6 +16,8 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import org.apache.log4j.Logger;
+
 import com.bosssoft.platform.installer.core.MainFrameController;
 import com.bosssoft.platform.installer.core.gui.AbstractSetupPanel;
 import com.bosssoft.platform.installer.core.runtime.InstallRuntime;
@@ -27,6 +29,7 @@ import com.bosssoft.platform.installer.wizard.gui.validate.ValidatorHelper;
 import com.bosssoft.platform.installer.wizard.util.PropertiesUtil;
 
 public class ChooseInstallDirPanel extends AbstractSetupPanel implements ActionListener {
+	Logger logger = Logger.getLogger(getClass());
 	private StepTitleLabel line = new StepTitleLabel();
 	public static final int install_path_max_length = 64;
 	private JTextArea introduction = new JTextArea();
@@ -121,6 +124,8 @@ public class ChooseInstallDirPanel extends AbstractSetupPanel implements ActionL
 		if (dir.endsWith(File.separator))
 			dir = dir.substring(0, dir.length() - 1);
 		getContext().setValue("INSTALL_DIR", dir);
+		
+		logger.info("set install dir: "+dir);
 	}
 
 	public void beforePrevious() {

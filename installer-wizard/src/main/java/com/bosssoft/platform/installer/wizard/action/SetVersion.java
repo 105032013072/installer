@@ -6,6 +6,9 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +24,7 @@ import org.dom4j.io.XMLWriter;
 import com.bosssoft.platform.installer.core.IContext;
 import com.bosssoft.platform.installer.core.InstallException;
 import com.bosssoft.platform.installer.core.action.IAction;
+import com.bosssoft.platform.installer.core.option.ModuleDef;
 import com.bosssoft.platform.installer.wizard.util.XmlUtil;
 
 
@@ -79,11 +83,21 @@ public class SetVersion implements IAction{
 		   for (Attribute attribute : list) {
 			 root.addElement(attribute.getQualifiedName()).addText(attribute.getValue());
 		 }
-		 //添加产品的安装路径以及应用的部署路径
-		root.addElement("installDir").addText(context.getStringValue("INSTALL_DIR"));
-	    root.addElement("deployDir").addText(context.getStringValue("APP_SERVER_DEPLOY_DIR"));
-	    root.addElement("serverPort").addText(context.getStringValue("APP_SERVER_PORT"));
-			try{
+		 root.addElement("installTime").addText(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+		 //记录该产品的应用信息
+		 Element applications=DocumentHelper.createElement("applications");
+		 root.add(applications);
+		 
+	     List<String> namekeys = getApps(context);
+	     for (String name : namekeys) {
+	    	 Element application=DocumentHelper.createElement("application");
+	    	 application.addElement("appName").addText(name);
+	    	 application.addElement("installDir").addText(context.getStringValue("INSTALL_DIR"));
+	    	 application.addElement("deployDir").addText(context.getStringValue("APP_SERVER_DEPLOY_DIR"));
+	    	 application.addElement("serverPort").addText(context.getStringValue("APP_SERVER_PORT"));
+		     applications.add(application);
+	     }
+	    try{
 				OutputFormat format =OutputFormat.createPrettyPrint(); 
 				  format.setEncoding("utf-8");//设置编码格式  
 				  format.setNewLineAfterDeclaration(false);
@@ -94,6 +108,14 @@ public class SetVersion implements IAction{
 			}catch(Exception e){
 				e.printStackTrace();
 			}
+	}
+	private List<String> getApps(IContext context) {
+		List<String> apps=new ArrayList<String>();
+		List<ModuleDef> optionsCompList=(List<ModuleDef>) context.getValue("MODULE_OPTIONS");
+		for (ModuleDef moduleDef : optionsCompList) {
+			 if(moduleDef.getFilesPath().endsWith("war")) apps.add(moduleDef.getNameKey());
+		}
+		return apps;
 	}
 	public void rollback(IContext context, Map params) throws InstallException {
 		

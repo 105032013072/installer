@@ -100,6 +100,8 @@ public class AppSvrPanel extends AbstractSetupPanel implements ActionListener {
 		if (this.appsvrPanel != null) {
 			Properties properties = this.appsvrPanel.getProperties();
 			getContext().putAll(properties);
+			
+			logger.info("set app server: "+properties);
 		}
 		Server s = (Server) this.cbxAS.getSelectedItem();
 		String asType = this.cbxAS.getSelectedItem().toString();
@@ -112,6 +114,7 @@ public class AppSvrPanel extends AbstractSetupPanel implements ActionListener {
 			getContext().setValue("IS_CLUSTER", "true");
 		else
 			getContext().setValue("IS_CLUSTER", "false");
+		
 	}
 
 	public void beforePrevious() {

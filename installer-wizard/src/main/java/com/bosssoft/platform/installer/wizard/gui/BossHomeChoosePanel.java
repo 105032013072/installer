@@ -20,6 +20,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import org.apache.log4j.Logger;
+
 import com.bosssoft.platform.installer.core.MainFrameController;
 import com.bosssoft.platform.installer.core.gui.AbstractControlPanel;
 import com.bosssoft.platform.installer.core.gui.AbstractSetupPanel;
@@ -32,7 +34,7 @@ import com.bosssoft.platform.installer.wizard.gui.validate.ValidatorHelper;
 import com.bosssoft.platform.installer.wizard.util.PropertiesUtil;
 
 public class BossHomeChoosePanel extends AbstractSetupPanel implements ActionListener{
-
+	Logger logger = Logger.getLogger(getClass());
 	private StepTitleLabel line = new StepTitleLabel();
 	public static final int install_path_max_length = 64;
 	private JTextArea introduction = new JTextArea();
@@ -127,6 +129,8 @@ public class BossHomeChoosePanel extends AbstractSetupPanel implements ActionLis
 		if (dir.endsWith(File.separator))
 			dir = dir.substring(0, dir.length() - 1);
 		getContext().setValue("BOSSSOFT_HOME", dir);
+		
+	    logger.info("set bosssoft_home: "+dir);
 	}
 
 	public void beforePrevious() {
