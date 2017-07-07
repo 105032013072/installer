@@ -76,7 +76,7 @@ public class SetVersion implements IAction{
 		
 	}
 	private void createProductVersion(IContext context, Element element) {
-		String productVFile=context.getStringValue("BOSSSOFT_HOME")+File.separator+context.getStringValue("PRODUCT_NAME")+"_version.xml";
+		String productVFile=context.getStringValue("BOSSSOFT_HOME")+File.separator+context.getStringValue("PRODUCT_NAME")+"_info.xml";
 		Document document = DocumentHelper.createDocument();
 		  Element root = document.addElement("product");
 		   List<Attribute> list=element.attributes();
