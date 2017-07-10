@@ -46,7 +46,7 @@ public class Launcher implements Constants {
 
 	public void run(String[] args) throws LaunchException {
 		String logPath = configLog4j();
-
+		
 		String installRootDir = InstallerFileManager.getInstallerRoot();
 		String configFilePath = getConfigFilePath(installRootDir);
 
@@ -76,7 +76,8 @@ public class Launcher implements Constants {
 				runtime.getContext().setValue("INSTALL_LOGFILE_PATH", logPath);
 				runtime.getContext().setValue("INSTALL_LOGFILE_NAME", logPath.substring(logPath.lastIndexOf("/") + 1));
 			}
-
+        
+			
 			//将操作系统信息放到context中
 			putosinfo2Context(runtime.getContext());
 			
