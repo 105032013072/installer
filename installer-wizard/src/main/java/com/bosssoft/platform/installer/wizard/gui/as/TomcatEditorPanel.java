@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.Properties;
 
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;

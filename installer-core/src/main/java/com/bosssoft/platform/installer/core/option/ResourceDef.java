@@ -13,8 +13,10 @@ public class ResourceDef {
   private String home;
   
   private Map<String,String> params=new HashMap<String, String>();
+  
+  private Boolean isInstall;
 
-public String getName() {
+  public String getName() {
 	return name;
 }
 
@@ -48,6 +50,18 @@ public void setHome(String home) {
 
 public void setParams(String key,String value) {
 	params.put(key, value);
+}
+
+public Boolean getIsInstall() {
+	return isInstall;
+}
+
+public void setIsInstall(Boolean isInstall) {
+	this.isInstall = isInstall;
+}
+
+public Map<String, String> getParams() {
+	return params;
 }
   
   

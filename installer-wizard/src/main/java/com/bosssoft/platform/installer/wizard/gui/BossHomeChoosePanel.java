@@ -22,6 +22,7 @@ import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
 
+import com.bosssoft.platform.installer.core.IContext;
 import com.bosssoft.platform.installer.core.MainFrameController;
 import com.bosssoft.platform.installer.core.gui.AbstractControlPanel;
 import com.bosssoft.platform.installer.core.gui.AbstractSetupPanel;
@@ -30,15 +31,13 @@ import com.bosssoft.platform.installer.core.util.I18nUtil;
 import com.bosssoft.platform.installer.io.FileUtils;
 import com.bosssoft.platform.installer.io.operation.exception.OperationException;
 import com.bosssoft.platform.installer.wizard.gui.component.StepTitleLabel;
+import com.bosssoft.platform.installer.wizard.gui.component.XFileChooser;
 import com.bosssoft.platform.installer.wizard.gui.validate.ValidatorHelper;
 import com.bosssoft.platform.installer.wizard.util.PropertiesUtil;
 
 public class BossHomeChoosePanel extends AbstractSetupPanel implements ActionListener{
 	Logger logger = Logger.getLogger(getClass());
-	private StepTitleLabel line = new StepTitleLabel();
 	public static final int install_path_max_length = 64;
-	private JTextArea introduction = new JTextArea();
-
 	private JLabel lblPath = new JLabel();
 
 	private JTextField tfdDir = new JTextField();
@@ -46,6 +45,10 @@ public class BossHomeChoosePanel extends AbstractSetupPanel implements ActionLis
 	private JButton btnBrowse = new JButton();
 
 	private JFileChooser dirChooser = new JFileChooser();
+	
+	private String parameter = null;
+
+	private IContext context = null;
 
 	public BossHomeChoosePanel() {
 		try {
@@ -56,68 +59,29 @@ public class BossHomeChoosePanel extends AbstractSetupPanel implements ActionLis
 	}
 
 	void jbInit() throws Exception {
+		setLayout(null);
 		setOpaque(false);
-		setLayout(new GridBagLayout());
-		this.line.setText(I18nUtil.getString("STEP.BOSSHOMEPATH"));
-		GridBagConstraints constraints = new GridBagConstraints();
-		constraints.gridx = (constraints.gridy = 0);
-		constraints.gridwidth = 0;
-		constraints.gridheight = 1;
-		constraints.insets = new Insets(5, 26, 0, 5);
-		constraints.fill = 1;
-		add(this.line, constraints);
+  
 
-		this.introduction.setOpaque(false);
-		this.introduction.setText(I18nUtil.getString("BOSSHOME.LABEL"));
-		this.introduction.setLineWrap(true);
-		this.introduction.setWrapStyleWord(true);
-		this.introduction.setEditable(false);
-		constraints.gridx = 0;
-		constraints.gridy = 1;
-		constraints.gridwidth = 0;
-		constraints.gridheight = 4;
-		constraints.insets.left = 37;
-		constraints.weightx = (constraints.weighty = 1.0D);
-		add(this.introduction, constraints);
+		this.lblPath.setText("BOSSSOFT HOME:");
+		lblPath.setBounds(new Rectangle(30, 10, 200, 10));
+		add(this.lblPath);
 
-		this.lblPath.setText(I18nUtil.getString("BOSSHOME.LABEL.DIRECTORY"));
-		constraints.gridx = 0;
-		constraints.gridy = 5;
-		constraints.gridwidth = 0;
-		constraints.gridheight = 1;
-		constraints.weightx = (constraints.weighty = 0.0D);
-		add(this.lblPath, constraints);
-
-		constraints.gridx = 0;
-		constraints.gridy = 6;
-		constraints.gridwidth = 0;
-		constraints.gridheight = 1;
-		constraints.insets.left = 45;
-		add(this.tfdDir, constraints);
-
-		constraints.gridx = 5;
-		constraints.gridy = 7;
-		constraints.gridwidth = 0;
-		constraints.gridheight = 1;
-		constraints.insets.left = 10;
-		add(this.btnBrowse, constraints);
-
-		this.btnBrowse.setMargin(new Insets(2, 2, 2, 2));
+		this.tfdDir.setBounds(new Rectangle(140, 5, 166, 25));
+		add(this.tfdDir);
+		
+		this.btnBrowse.setBounds(new Rectangle(312, 5, 73, 23));
 		this.btnBrowse.setMnemonic('R');
+		this.btnBrowse.setMargin(new Insets(2, 2, 2, 2));
 		this.btnBrowse.setText(I18nUtil.getString("BUTTON.BROWSE"));
 		this.btnBrowse.setOpaque(false);
+		this.btnBrowse.setEnabled(true);
+		add(btnBrowse);
 
 		this.btnBrowse.addActionListener(this);
 		this.dirChooser.setFileSelectionMode(1);
 
-		JLabel jLabel1 = new JLabel();
-		constraints.gridx = 1;
-		constraints.gridy = 8;
-		constraints.gridwidth = 1;
-		constraints.gridheight = 1;
-		constraints.weightx = (constraints.weighty = 1.0D);
-		add(jLabel1, constraints);
-		jLabel1.setOpaque(false);
+		
 	}
 
 	public void afterShow() {
@@ -227,4 +191,22 @@ public class BossHomeChoosePanel extends AbstractSetupPanel implements ActionLis
 		
 		
 	}
+
+	public String getParameter() {
+		return parameter;
+	}
+
+	public void setParameter(String parameter) {
+		this.parameter = parameter;
+	}
+
+	public IContext getContext() {
+		return context;
+	}
+
+	public void setContext(IContext context) {
+		this.context = context;
+	}
+
+	
 }

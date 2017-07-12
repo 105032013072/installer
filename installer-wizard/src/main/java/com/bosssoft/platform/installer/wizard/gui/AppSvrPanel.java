@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -41,6 +42,8 @@ public class AppSvrPanel extends AbstractSetupPanel implements ActionListener {
 	private JLabel lblAppsvr = new JLabel();
 
 	private HashMap editorPanelMap = new HashMap();
+	
+	
 
 	public AppSvrPanel() {
 		try {
@@ -58,6 +61,8 @@ public class AppSvrPanel extends AbstractSetupPanel implements ActionListener {
 		this.line.setText(I18nUtil.getString("STEP.APPSVR"));
 		this.line.setBounds(new Rectangle(26, 5, 581, 27));
 
+		
+		
 		this.introduction.setOpaque(false);
 		this.introduction.setEditable(false);
 		this.introduction.setLineWrap(true);
