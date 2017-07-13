@@ -7,6 +7,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,7 +36,7 @@ import com.bosssoft.platform.installer.wizard.gui.component.StepTitleLabel;
 import com.bosssoft.platform.installer.wizard.gui.option.CheckBoxNodeEditor;
 import com.bosssoft.platform.installer.wizard.gui.option.CheckBoxNodeRenderer;
 
-public class OptionalComponentsPanel extends AbstractSetupPanel implements TreeSelectionListener {
+public class OptionalComponentsPanel extends AbstractSetupPanel implements TreeSelectionListener{
 	private static final long serialVersionUID = -9137406061783383805L;
 	private BorderLayout borderLayout1 = new BorderLayout();
 
@@ -165,28 +166,21 @@ public class OptionalComponentsPanel extends AbstractSetupPanel implements TreeS
 
 	public void beforeNext() {
 		List<ModuleDef> optionsCompList = ComponentsDefHelper.getOptionCompsDef();
-		StringBuffer selectedComps = new StringBuffer();
+		List selectedComps = new ArrayList<CompDef>();
 		StringBuffer optionsNamekeys = new StringBuffer();
 		for (CompDef comp : optionsCompList) {
-			getChoosedOptions(comp, "", selectedComps, optionsNamekeys);
+			getChoosedOptions(comp, "",selectedComps,optionsNamekeys);
 		}
 
-		this.context.setValue("MODULE_OPTIONS", selectedComps.toString());
-		this.context.setValue("OPTIONS.NAMEKEYS", optionsNamekeys.toString());
+		this.context.setValue("MODULE_OPTIONS", selectedComps);
+		this.context.setValue("MODULE_OPTIONS_NAMES", optionsNamekeys.toString());
 	}
 
-	private void getChoosedOptions(CompDef comp, String prefix, StringBuffer options, StringBuffer optionsNamekeys) {
+	private void getChoosedOptions(CompDef comp, String prefix,List options,StringBuffer optionsNamekeys) {
 		String namekey = comp.getNameKey();
 		if (comp.isSelected()) {
-			options.append(comp.getId()).append(",");
+			options.add(comp);
 			optionsNamekeys.append(prefix + namekey).append(",");
-		}
-
-		List<CompDef> subComps = comp.getComps();
-		if ((subComps != null) && (subComps.size() > 0)) {
-			prefix = prefix + namekey + ".";
-			for (CompDef subComp : subComps)
-				getChoosedOptions(subComp, prefix, options, optionsNamekeys);
 		}
 	}
 

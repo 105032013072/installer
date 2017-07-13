@@ -22,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import org.apache.log4j.Logger;
 import org.apache.tools.ant.Location;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -41,7 +42,7 @@ import com.bosssoft.platform.installer.wizard.gui.component.StepTitleLabel;
 import com.bosssoft.platform.installer.wizard.gui.component.XFileChooser;
 
 public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListener{
-
+	Logger logger = Logger.getLogger(getClass());
 	private StepTitleLabel line = new StepTitleLabel();
 	private JTextArea introduction = new JTextArea();
 	private BossHomeChoosePanel bossHomeChoosePanel=new BossHomeChoosePanel();
@@ -79,29 +80,36 @@ public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListe
 		this.introduction.setBounds(new Rectangle(30, 30, 500, 50));
 		add(introduction);
 		
-		this.bossHomeChoosePanel.setBounds(new Rectangle(6, 130, 400, 40));
+		this.bossHomeChoosePanel.setBounds(new Rectangle(5, 103, 500, 60));
 		add(this.bossHomeChoosePanel);
 		
 		resourceMap=loadResource();//加载需要安装的运行组件
-	    int checkBoxy=180;
-	    int choosery=180;
+	    int checkBoxy=168;
+	    int choosery=181;
+	    int labely=183;
 	    Collection<ResourceDef> values =resourceMap.values();
 		for (ResourceDef resourceDef : values) {
 			String name=resourceDef.getName();
-			JCheckBox checkBox=new JCheckBox(name);
-			checkBox.setBounds(new Rectangle(20, checkBoxy, 100, 16));
-			checkBoxy=checkBoxy+29;
+			JCheckBox checkBox=new JCheckBox("安装"+name);
+			checkBox.setBounds(new Rectangle(30, checkBoxy, 150, 16));
+			checkBoxy=checkBoxy+50;
 			checkBox.setOpaque(false);
 			checkBox.setSelected(true);
+			if(resourceDef.getRequired()) checkBox.setEnabled(false);
 			checkBox.addActionListener(this);
 			checkBoxMap.put(locationToStr(checkBox.getLocation()), name);
 			add(checkBox);
 			
+			JLabel label=new JLabel("请设置"+name+" home:");
+			label.setBounds(new Rectangle(30, labely,150, 25));
+			labely=labely+50;
+			add(label);
+			
 			XFileChooser fileChooser=new XFileChooser();
 			fileChooser.setButtonText(I18nUtil.getString("BUTTON.BROWSE"));
 			fileChooser.setEnabled(false);
-			fileChooser.setBounds(new Rectangle(133, choosery, 237, 21));
-			choosery=choosery+29;
+			fileChooser.setBounds(new Rectangle(180, choosery, 237, 21));
+			choosery=choosery+50;
 			fileChooserMap.put(name, locationToStr(fileChooser.getLocation()));
 			add(fileChooser);
 			
@@ -143,6 +151,9 @@ public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListe
 			def.setSourcePath(ExpressionParser.parseString(ele.elementText("sourcePath")));
 			def.setDestPath(ExpressionParser.parseString(ele.elementText("destPath")));
 			def.setHome(ExpressionParser.parseString(ele.elementText("home")));
+			String required=ele.elementText("required");
+			if("false".equalsIgnoreCase(required)) def.setRequired(false);
+			else if("true".equalsIgnoreCase(required)) def.setRequired(true);
 			
 			Iterator<Element> paramters=ele.element("paramters").elementIterator("paramter");
 			while(paramters.hasNext()){
@@ -234,8 +245,11 @@ public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListe
 
 	@Override
 	public void beforeNext() {
+		logger.info("config run environment");
+		
 		this.bossHomeChoosePanel.beforeNext();
 		
+		StringBuffer installStr=new StringBuffer();
 		Iterator iter=checkBoxMap.entrySet().iterator();
 		while(iter.hasNext()){
 			Map.Entry<String,String> entry=(Entry) iter.next();
@@ -246,12 +260,13 @@ public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListe
 			JCheckBox checkbox=(JCheckBox) getComponentAt(checkBoxLoc);
 			if(checkbox.isSelected()){
 				resourceDef.setIsInstall(true);
-				
+				installStr.append(appName).append(",");
 			}else{
 				Point chooserPoint=StrToLocation(fileChooserMap.get(appName));
 		    	XFileChooser fileChooser=(XFileChooser) getComponentAt(chooserPoint);
 		    	resourceDef.setHome(fileChooser.getText().trim());
 		    	resourceDef.setIsInstall(false);
+		    	logger.debug("set "+appName+" home " +fileChooser.getText());
 			}
 			
 			Map<String,String> params=resourceDef.getParams();
@@ -267,6 +282,7 @@ public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListe
 		}
 		
 		getContext().setValue("RESOURCE_MAP", resourceMap);
+		getContext().setValue("INSATLL_SERVERS", installStr);
 		
 	}
 

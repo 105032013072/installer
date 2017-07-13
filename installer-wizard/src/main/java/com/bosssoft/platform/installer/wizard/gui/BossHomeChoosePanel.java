@@ -41,6 +41,8 @@ public class BossHomeChoosePanel extends AbstractSetupPanel implements ActionLis
 	private JLabel lblPath = new JLabel();
 
 	private JTextField tfdDir = new JTextField();
+	
+	private JLabel ldlabel=new JLabel();
 
 	private JButton btnBrowse = new JButton();
 
@@ -67,10 +69,14 @@ public class BossHomeChoosePanel extends AbstractSetupPanel implements ActionLis
 		lblPath.setBounds(new Rectangle(30, 10, 200, 10));
 		add(this.lblPath);
 
-		this.tfdDir.setBounds(new Rectangle(140, 5, 166, 25));
+		this.ldlabel.setText(I18nUtil.getString("BOSSHOME.LABEL.DIR"));
+		this.ldlabel.setBounds(new Rectangle(30, 25, 100, 25));
+		add(ldlabel);
+		
+		this.tfdDir.setBounds(new Rectangle(174, 25, 164, 24));
 		add(this.tfdDir);
 		
-		this.btnBrowse.setBounds(new Rectangle(312, 5, 73, 23));
+		this.btnBrowse.setBounds(new Rectangle(343, 25, 71, 22));
 		this.btnBrowse.setMnemonic('R');
 		this.btnBrowse.setMargin(new Insets(2, 2, 2, 2));
 		this.btnBrowse.setText(I18nUtil.getString("BUTTON.BROWSE"));

@@ -15,7 +15,10 @@ public class ResourceDef {
   private Map<String,String> params=new HashMap<String, String>();
   
   private Boolean isInstall;
+  
+  private String InstallFiles;//silent安装
 
+  private Boolean required=false;//是否必须安装
   public String getName() {
 	return name;
 }
@@ -62,6 +65,22 @@ public void setIsInstall(Boolean isInstall) {
 
 public Map<String, String> getParams() {
 	return params;
+}
+
+public String getInstallFiles() {
+	return InstallFiles;
+}
+
+public void setInstallFiles(String installFiles) {
+	InstallFiles = installFiles;
+}
+
+public Boolean getRequired() {
+	return required;
+}
+
+public void setRequired(Boolean required) {
+	this.required = required;
 }
   
   
