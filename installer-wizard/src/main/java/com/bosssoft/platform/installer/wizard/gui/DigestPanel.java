@@ -19,6 +19,7 @@ import com.bosssoft.platform.installer.core.MainFrameController;
 import com.bosssoft.platform.installer.core.gui.AbstractControlPanel;
 import com.bosssoft.platform.installer.core.gui.AbstractSetupPanel;
 import com.bosssoft.platform.installer.core.util.I18nUtil;
+import com.bosssoft.platform.installer.wizard.cfg.Servers;
 import com.bosssoft.platform.installer.wizard.gui.component.StepTitleLabel;
 
 public class DigestPanel extends AbstractSetupPanel {
@@ -170,13 +171,20 @@ public class DigestPanel extends AbstractSetupPanel {
 		this.treeModel.insertNodeInto(new DefaultMutableTreeNode(getContext().getStringValue("APP_SERVER_TYPE")), labelNode, 0);
 		
 		labelNode = new DefaultMutableTreeNode(appsLabel);
+		String[] apps=getContext().getStringValue("MODULE_OPTIONS_NAMES").split(",");
 		this.treeModel.insertNodeInto(labelNode, root, root.getChildCount());
-		this.treeModel.insertNodeInto(new DefaultMutableTreeNode(getContext().getStringValue("MODULE_OPTIONS_NAMES")), labelNode, 0);
+		for (String app : apps) {
+			this.treeModel.insertNodeInto(new DefaultMutableTreeNode(app), labelNode, 0);
+		}
 	
 
-		labelNode = new DefaultMutableTreeNode(evnServers);
-		this.treeModel.insertNodeInto(labelNode, root, root.getChildCount());
-		this.treeModel.insertNodeInto(new DefaultMutableTreeNode(getContext().getStringValue("INSATLL_SERVERS")), labelNode, 0);
+		String[] servers=getContext().getStringValue("INSATLL_SERVERS").split(",");
+			labelNode = new DefaultMutableTreeNode(evnServers);
+			this.treeModel.insertNodeInto(labelNode, root, root.getChildCount());
+			for (String server : servers) {
+				this.treeModel.insertNodeInto(new DefaultMutableTreeNode(server), labelNode, 0);
+			}	
+		
 	}
 
 	private DefaultMutableTreeNode getChildByNameKey(DefaultMutableTreeNode parent, String nameKey) {

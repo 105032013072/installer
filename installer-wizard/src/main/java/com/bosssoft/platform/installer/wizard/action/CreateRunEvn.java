@@ -40,19 +40,15 @@ public class CreateRunEvn implements IAction{
 	private void install(ResourceDef resourceDef, IContext context) throws Exception {
 		
 	   logger.info("create run environment: install "+resourceDef.getName());
-	   if("true".equals(context.getStringValue("IS_WINDOWS"))){
-		   copyInstall(resourceDef);//直接拷贝或者解压
-	   }else{
-		   String installFiles=resourceDef.getInstallFiles();
-		   if(installFiles==null||"".equals(installFiles)) copyInstall(resourceDef);
-		   else scriptInstall(installFiles);//使用脚本安装
-	   }
+	   copyInstall(resourceDef);//直接拷贝或者解压
+	   
+	   String installFiles=resourceDef.getInstallFiles();
+	   if(installFiles!=null&&!"".equals(installFiles)) scriptInstall(installFiles);//使用脚本安装
 	   
 	   
 	}
 
 	private void scriptInstall(String installfiles) throws Exception {
-		System.out.println("脚本安装"); 
 		String[] files=installfiles.split(",");
 	       
     	 for (String file : files) {

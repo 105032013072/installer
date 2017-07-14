@@ -45,10 +45,9 @@ public class LoadResourceSilent implements IAction{
 		def.setName(ele.elementText("name"));
 		def.setHome(ExpressionParser.parseString(ele.elementText("home")));
 		def.setIsInstall(true);
-		if(ele.elementText("installfiles")==null||"".equals(ele.elementText("installfiles"))){//不需要脚本安装
-			def.setSourcePath(ExpressionParser.parseString(ele.elementText("sourcePath")));
-			def.setDestPath(ExpressionParser.parseString(ele.elementText("destPath")));
-		}else{
+		def.setSourcePath(ExpressionParser.parseString(ele.elementText("sourcePath")));
+		def.setDestPath(ExpressionParser.parseString(ele.elementText("destPath")));
+		if(ele.elementText("installfiles")!=null&&!"".equals(ele.elementText("installfiles"))){//不需要脚本安装
 			def.setInstallFiles(ExpressionParser.parseString(ele.elementText("installfiles")));
 		}
 		
