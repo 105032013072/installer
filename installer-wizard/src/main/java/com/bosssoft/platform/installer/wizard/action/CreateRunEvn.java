@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import com.bosssoft.platform.installer.core.IContext;
 import com.bosssoft.platform.installer.core.InstallException;
 import com.bosssoft.platform.installer.core.action.IAction;
+import com.bosssoft.platform.installer.core.action.MkDir;
 import com.bosssoft.platform.installer.core.option.ResourceDef;
 import com.bosssoft.platform.installer.core.util.ExpressionParser;
 import com.bosssoft.platform.installer.io.FileUtils;
@@ -22,6 +23,16 @@ public class CreateRunEvn implements IAction{
 
 	transient Logger logger = Logger.getLogger(getClass());
 	public void execute(IContext context, Map params) throws InstallException {
+		//创建BOSSOFT_HOM目录
+		File path=new File(context.getValue("BOSSSOFT_HOME").toString());
+		if(!path.exists()) {
+			MkDir dir=new MkDir();
+			dir.setDir(path.getPath());
+			dir.execute(context, params);
+			logger.debug("create BOSSSOFT_HOME dir");
+		}
+		
+		//安装运行环境
 		Map<String,ResourceDef> map=(Map<String, ResourceDef>) context.getValue("RESOURCE_MAP");
 	    Collection<ResourceDef> values=map.values();
 	    for (ResourceDef resourceDef : values) {

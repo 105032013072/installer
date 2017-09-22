@@ -109,7 +109,8 @@ public class SetVersion implements IAction{
 	private void createAppVersion(IContext context, Element app) {
 	try{
 		String appVFile=context.getStringValue("BOSSSOFT_HOME")+File.separator+app.attributeValue("name")+File.separator+"version.xml";
-		 
+		if(!new File(appVFile).exists()) new File(appVFile).createNewFile();
+		
 		BufferedWriter bw = new BufferedWriter (new OutputStreamWriter (new FileOutputStream(appVFile)));
 		bw.write (app.asXML());
 		bw.close();

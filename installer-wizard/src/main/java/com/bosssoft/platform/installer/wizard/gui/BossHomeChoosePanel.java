@@ -95,7 +95,7 @@ public class BossHomeChoosePanel extends AbstractSetupPanel implements ActionLis
 
 	 //获取路径值，将值存到content中
 	public void beforeNext() {
-		String dir = this.tfdDir.getText().trim();
+		String dir = this.tfdDir.getText().trim()+File.separator+"BOSSSOFT_HOME";
 		if (dir.endsWith(File.separator))
 			dir = dir.substring(0, dir.length() - 1);
 		getContext().setValue("BOSSSOFT_HOME", dir);
@@ -178,10 +178,10 @@ public class BossHomeChoosePanel extends AbstractSetupPanel implements ActionLis
 	public void initialize(String[] parameters) {
 		if (System.getProperty("os.name").toLowerCase().indexOf("window") >= 0)
 		  //this.tfdDir.setText(("C:\\" + InstallRuntime.INSTANCE.getContext().getStringValue("default.install.dir")).replace('/', '\\'));
-			this.tfdDir.setText(System.getProperty("user.home")+"\\"+"bosssoft_home");
+			this.tfdDir.setText(System.getProperty("user.home"));
 		else
 			//this.tfdDir.setText(System.getProperty("user.home") + "/" + InstallRuntime.INSTANCE.getContext().getStringValue("default.install.dir"));
-			this.tfdDir.setText(System.getProperty("user.home") + "/" +"bosssoft_home");
+			this.tfdDir.setText(System.getProperty("user.home") + "/" +"BOSSSOFT_HOME");
 	}
 
 	public void actionPerformed(ActionEvent ae) {
