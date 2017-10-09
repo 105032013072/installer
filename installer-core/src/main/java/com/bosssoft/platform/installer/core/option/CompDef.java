@@ -8,7 +8,7 @@ public class CompDef {
 	private String longid = null;
 
 	private String size = null;
-	private String required = null;
+	private String editable = null;
 	private String selected = null;
 	private String nameKey = null;
 	private String descKey = null;
@@ -75,12 +75,12 @@ public class CompDef {
 		this.nameKey = namekey;
 	}
 
-	public String getRequired() {
-		return this.required;
+	public String getEditable() {
+		return this.editable;
 	}
 
-	public void setRequired(String required) {
-		this.required = required;
+	public void setEditable(String editable) {
+		this.editable = editable;
 	}
 
 	public String getSelected() {
@@ -129,13 +129,12 @@ public class CompDef {
 	}
 
 	public boolean isEditable() {
-		if (getRequired() == null)
-			return false;
-		return getRequired().toLowerCase().equals("false");
+		if("true".equalsIgnoreCase(editable)) return true;
+		else return false;
 	}
 
 	public boolean isSelected() {
-		return (!isEditable()) || (this.selected.equalsIgnoreCase("true"));
+		return (this.selected.equalsIgnoreCase("true"));
 	}
 
 	public String toString() {

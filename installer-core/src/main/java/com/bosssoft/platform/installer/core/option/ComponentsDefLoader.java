@@ -31,7 +31,7 @@ public class ComponentsDefLoader
     xStream.useAttributeFor("dependedBy", String.class);
     xStream.useAttributeFor("filesPath", String.class);
     xStream.useAttributeFor("selected", String.class);
-    xStream.useAttributeFor("required", String.class);
+    xStream.useAttributeFor("editable", String.class);
 
     xStream.addImplicitCollection(ModuleDef.class, "comps", CompDef.class);
     xStream.addImplicitCollection(CompDef.class, "comps", CompDef.class);

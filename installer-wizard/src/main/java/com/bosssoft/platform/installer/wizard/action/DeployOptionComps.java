@@ -42,14 +42,9 @@ public class DeployOptionComps implements IAction{
 		//读取组件信息
 		try{
 			List<ModuleDef> optionsCompList=new ArrayList<ModuleDef>();
-			if("true".equals(context.getStringValue("IS_WINDOWS")))
-				optionsCompList=(List<ModuleDef>) context.getValue("MODULE_OPTIONS");
-			else{
-				optionsCompList = ComponentsDefHelper.getOptionCompsDef();
-				context.setValue("MODULE_OPTIONS", optionsCompList);
-			}
-	
+		    optionsCompList=(List<ModuleDef>) context.getValue("MODULE_OPTIONS");
 			
+
 			for (ModuleDef moduleDef : optionsCompList) {
 				deployWar(context,moduleDef);
 			}

@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -68,6 +69,8 @@ public class SetVersion implements IAction{
 	
 	private void createAppUpgrade(IContext context, Element app) throws Exception {
 		String appName=app.attributeValue("name");
+		if(!isInstalled(appName, context)) return;
+		
 		String version=app.attributeValue("version");
 		String filepath=context.getStringValue("BOSSSOFT_HOME")+File.separator
 				+appName+File.separator
@@ -108,12 +111,16 @@ public class SetVersion implements IAction{
 	}
 	private void createAppVersion(IContext context, Element app) {
 	try{
-		String appVFile=context.getStringValue("BOSSSOFT_HOME")+File.separator+app.attributeValue("name")+File.separator+"version.xml";
-		if(!new File(appVFile).exists()) new File(appVFile).createNewFile();
+		String targetName=app.attributeValue("name");
+		if(isInstalled(targetName, context)){
+			String appVFile=context.getStringValue("BOSSSOFT_HOME")+File.separator+app.attributeValue("name")+File.separator+"version.xml";
+			if(!new File(appVFile).exists()) new File(appVFile).createNewFile();
+			
+			BufferedWriter bw = new BufferedWriter (new OutputStreamWriter (new FileOutputStream(appVFile)));
+			bw.write (app.asXML());
+			bw.close();
+		}
 		
-		BufferedWriter bw = new BufferedWriter (new OutputStreamWriter (new FileOutputStream(appVFile)));
-		bw.write (app.asXML());
-		bw.close();
 	}  catch(Exception e){
 		e.printStackTrace();
 	}
@@ -154,6 +161,15 @@ public class SetVersion implements IAction{
 				e.printStackTrace();
 			}
 	}
+	
+	private Boolean isInstalled(String appName,IContext context){
+		String appnames=context.getStringValue("MODULE_OPTIONS_NAMES");
+		if(appnames==null||"".equals(appnames)) return false;
+		
+		List<String> appList=Arrays.asList(appnames.split(","));
+		return appList.contains(appName);
+	}
+	
 	private List<String> getApps(IContext context) {
 		List<String> apps=new ArrayList<String>();
 		List<ModuleDef> optionsCompList=(List<ModuleDef>) context.getValue("MODULE_OPTIONS");

@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -89,7 +90,7 @@ public class CheckBoxNodeRenderer implements TreeCellRenderer {
 						this.optionRenderer.setSelected(comp.isSelected());
 					this._currentComponent = this.optionRenderer;
 				} else {
-					this._currentComponent = getRequiredCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);
+					this._currentComponent = getRequiredCellRenderer(tree, value, comp.isSelected(), expanded, leaf, row, hasFocus);
 				}
 			} else {
 				this._currentComponent = getRootCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);
@@ -101,6 +102,7 @@ public class CheckBoxNodeRenderer implements TreeCellRenderer {
 			this._currentComponent.setBackground(this.selectColor);
 		else {
 			this._currentComponent.setBackground(UIManager.getColor("Tree.textBackground"));
+			
 		}
 		return this._currentComponent;
 	}
@@ -113,10 +115,13 @@ public class CheckBoxNodeRenderer implements TreeCellRenderer {
 	}
 
 	private Component getRequiredCellRenderer(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+		
 		this.requiredRender.setText(value.toString());
 		this.requiredRender.setOpaque(true);
 		//this.requiredRender.setIcon(new ImageIcon(getClass().getResource("checked.gif")));
-		this.requiredRender.setIcon(new ImageIcon(InstallerFileManager.getImageDir()+"/checked.gif"));
+		if(selected) this.requiredRender.setIcon(new ImageIcon(InstallerFileManager.getImageDir()+"/checked.gif"));
+		else this.requiredRender.setIcon(new ImageIcon(InstallerFileManager.getImageDir()+"/uncheck.gif"));
+		
 		return this.requiredRender;
 	}
 

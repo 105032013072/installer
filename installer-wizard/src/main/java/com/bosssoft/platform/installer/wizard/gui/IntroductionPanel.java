@@ -2,6 +2,9 @@ package com.bosssoft.platform.installer.wizard.gui;
 
 import java.awt.Rectangle;
 
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import com.bosssoft.platform.installer.core.MainFrameController;
@@ -54,6 +57,7 @@ public class IntroductionPanel extends AbstractSetupPanel {
 	}
 
 	public void afterShow() {
+		
 	}
 
 	public void beforeNext() {
@@ -68,6 +72,7 @@ public class IntroductionPanel extends AbstractSetupPanel {
 		controlPane.setButtonVisible("help", false);
 		controlPane.setButtonVisible("previous", false);
 		this.introduction.setText(getIntroduction());
+		
 	}
 
 	public boolean checkInput() {
