@@ -159,7 +159,9 @@ public class TomcatEditorPanel extends AbstractASEditorPanel implements ActionLi
 		return port;
 	}
 
-	
+	public String getAppSvrPort(){
+		return this.txPort.getText();
+	}
 	
 	
 

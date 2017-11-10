@@ -32,6 +32,7 @@ public class ComponentsDefLoader
     xStream.useAttributeFor("filesPath", String.class);
     xStream.useAttributeFor("selected", String.class);
     xStream.useAttributeFor("editable", String.class);
+    xStream.useAttributeFor("chineseName", String.class);
 
     xStream.addImplicitCollection(ModuleDef.class, "comps", CompDef.class);
     xStream.addImplicitCollection(CompDef.class, "comps", CompDef.class);

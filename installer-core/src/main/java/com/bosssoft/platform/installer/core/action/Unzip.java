@@ -34,7 +34,9 @@ public class Unzip extends AbstractAction {
 
 		File srcFile = new File(srcPath);
 		File destDir = new File(destPath);
+		
 		try {
+			if(destDir.exists()) FileUtils.delete(destDir, null, null);
 			FileUtils.unzip(srcFile, destDir, null, FileOperationMessageListener.INSTANCE);
 		} catch (OperationException e) {
 			throw new InstallException("Failed to unzip " + srcPath + " to " + destPath, e);

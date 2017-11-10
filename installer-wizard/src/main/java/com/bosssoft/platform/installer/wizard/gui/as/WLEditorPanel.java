@@ -364,6 +364,10 @@ public class WLEditorPanel extends AbstractASEditorPanel implements ActionListen
 		 this.txPort.setText(port);
 		this.txPort.setEditable(false);
 	}
+	
+	public String getAppSvrPort(){
+		return this.txPort.getText();
+	}
 
 	
 }

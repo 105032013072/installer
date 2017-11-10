@@ -12,6 +12,7 @@ public class InstallerInitialize implements IAction {
 	public void execute(IContext context, Map parameters) throws InstallException {
 		setCurrentLocale(context);
 		context.setValue("INSTALL_ROOT", InstallerFileManager.getInstallerRoot());
+		context.setValue("USERHOME", System.getProperty("user.home"));
 	}
 
 	public void rollback(IContext context, Map parameters) throws InstallException {

@@ -296,4 +296,8 @@ public class ClusterWLEditorPanel extends AbstractASEditorPanel {
 
 		return properties;
 	}
+	
+	public String getAppSvrPort(){
+		return this.txPort.getText();
+	}
 }

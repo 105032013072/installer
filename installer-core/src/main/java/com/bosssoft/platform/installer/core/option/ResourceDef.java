@@ -1,6 +1,8 @@
 package com.bosssoft.platform.installer.core.option;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ResourceDef {
@@ -19,6 +21,13 @@ public class ResourceDef {
   private String InstallFiles;//silent安装
 
   private Boolean required=false;//是否必须安装
+  
+  private List<Integer> ports=new ArrayList<Integer>();
+  
+  private String portConfigFile;//该应用端口的配置文件
+  
+  private List<String> portConfigKeys;
+  
   public String getName() {
 	return name;
 }
@@ -82,6 +91,34 @@ public Boolean getRequired() {
 public void setRequired(Boolean required) {
 	this.required = required;
 }
+
+public List<Integer> getPorts() {
+	return ports;
+}
   
-  
+public void addPort(Integer port){
+	this.ports.add(port);
+}
+
+public void setPorts(List<Integer> ports) {
+	this.ports = ports;
+}
+
+public String getPortConfigFile() {
+	return portConfigFile;
+}
+
+public void setPortConfigFile(String portConfigFile) {
+	this.portConfigFile = portConfigFile;
+}
+
+public List<String> getPortConfigKeys() {
+	return portConfigKeys;
+}
+
+public void setPortConfigKeys(List<String> portConfigKeys) {
+	this.portConfigKeys = portConfigKeys;
+}
+
+
 }

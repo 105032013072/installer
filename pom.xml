@@ -19,7 +19,6 @@
   	<jython.version>2.1</jython.version>
   	<xstream.version>1.4.6</xstream.version>
   	<project.encoding>UTF-8</project.encoding>
-  	
   </properties>
   <modules>
     <module>installer-core</module>

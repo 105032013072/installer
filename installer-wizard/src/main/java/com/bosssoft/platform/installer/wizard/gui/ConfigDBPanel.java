@@ -116,7 +116,7 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 			return false;
 		}
 
-		if ("PE".equalsIgnoreCase(this.context.getStringValue("EDITION"))) {
+		/*if ("PE".equalsIgnoreCase(this.context.getStringValue("EDITION"))) {
 			boolean exist = CheckDataSourceExistAction.checkDataSourceExist(this.context, this.tfdDataSourceName.getText().trim());
 			if (exist) {
 				String msg = I18nUtil.getString("CheckDataSourceExistAction.Exist.Error");
@@ -124,7 +124,7 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 				return false;
 			}
 
-		}
+		}*/
 
 		String app_server_name = this.context.getStringValue("APP_SERVER_NAME");
 		if (("WebLogic".indexOf(app_server_name) != -1) || ("WebSphere6.0".indexOf(app_server_name) != -1)) {

@@ -34,4 +34,8 @@ public abstract class AbstractASEditorPanel extends JPanel implements IEditorPan
 	public String getChooserAppSerHome() {
 		return "";
 	}
+	
+	public String getAppSvrPort(){
+		return "";
+	}
 }

@@ -228,4 +228,5 @@ public class WASClusterEditorPanel extends AbstractASEditorPanel {
 				WASClusterEditorPanel.this.refreshClusters();
 		}
 	}
+	
 }

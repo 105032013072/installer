@@ -10,8 +10,10 @@ import org.apache.log4j.Logger;
 
 import com.bosssoft.platform.installer.core.IContext;
 import com.bosssoft.platform.installer.core.InstallException;
+import com.bosssoft.platform.installer.core.action.Copydir;
 import com.bosssoft.platform.installer.core.action.IAction;
 import com.bosssoft.platform.installer.core.option.ModuleDef;
+import com.bosssoft.platform.installer.core.util.InstallerFileManager;
 import com.bosssoft.platform.installer.io.FileUtils;
 import com.bosssoft.platform.installer.io.operation.exception.OperationException;
 
@@ -26,7 +28,7 @@ public class CreateBossHome implements IAction{
 	}
 
 	private void create(IContext context, ModuleDef moduleDef) {
-		String homePath=context.getStringValue("BOSSSOFT_HOME")+File.separator+moduleDef.getNameKey()+File.separator+"conf";
+		/*String homePath=context.getStringValue("BOSSSOFT_HOME")+File.separator+moduleDef.getNameKey()+File.separator+"conf";
 		File homedir=new File(homePath);
 		if(!homedir.exists())
 			homedir.mkdirs();
@@ -53,8 +55,19 @@ public class CreateBossHome implements IAction{
 				
 				this.logger.error(e);
 			}
-		}
-           
+		}*/
+          
+		
+		String homePath=context.getStringValue("BOSSSOFT_HOME")+File.separator+moduleDef.getNameKey();
+		File homedir=new File(homePath);
+		if(!homedir.exists()) homedir.mkdirs();
+		  String sourceDir=InstallerFileManager.getResourcesDir()+File.separator+"outerConfig"+File.separator+moduleDef.getNameKey()+File.separator+"conf";
+		  if(new File(sourceDir).exists()){
+			  Copydir copydir=new Copydir();
+			  copydir.setSrcDir(sourceDir);
+			  copydir.setDestDir(homePath+File.separator+"conf");
+			  copydir.execute(context, null);
+		  }
 	}
 
 	public void rollback(IContext context, Map params) throws InstallException {

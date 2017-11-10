@@ -229,4 +229,10 @@ public class AppSvrPanel extends AbstractSetupPanel implements ActionListener {
 			repaint();
 		}
 	}
+
+	public AbstractASEditorPanel getAppsvrPanel() {
+		return appsvrPanel;
+	}
+	
+	
 }

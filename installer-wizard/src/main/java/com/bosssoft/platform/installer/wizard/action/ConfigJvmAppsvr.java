@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Map;
 
@@ -14,19 +15,63 @@ import com.bosssoft.platform.installer.core.IContext;
 import com.bosssoft.platform.installer.core.InstallException;
 import com.bosssoft.platform.installer.core.action.IAction;
 
+import java_cup.symbol_set;
+
 public class ConfigJvmAppsvr implements IAction{
 	transient Logger logger = Logger.getLogger(getClass());
 	
 	public void execute(IContext context, Map params) throws InstallException {
-		String appsvrType = context.getStringValue("APP_SERVER_TYPE");
-		if(appsvrType.toLowerCase().indexOf("tomcat")!=-1){
-			configTomcat(context, params);
-			
-		}else if(appsvrType.toLowerCase().indexOf("jboss")!=-1){
-			
-		}else if(appsvrType.toLowerCase().indexOf("weblogic")!=-1){
-			configweblogic(context, params);
+		try{
+			String appsvrType = context.getStringValue("APP_SERVER_TYPE");
+			if(appsvrType.toLowerCase().indexOf("tomcat")!=-1){
+				configTomcat(context, params);
+				configForServer(context);//server.bat
+				
+			}else if(appsvrType.toLowerCase().indexOf("jboss")!=-1){
+				
+			}else if(appsvrType.toLowerCase().indexOf("weblogic")!=-1){
+				configweblogic(context, params);
+			}
+		}catch(Exception e){
+			throw new InstallException(e);
 		}
+		
+		
+	}
+
+    //tomcat若是 注册成服务，jvm参数需要配置在server.bat
+	private void configForServer(IContext context) throws Exception{
+
+			File serverFile=new File(context.getStringValue("AS_TOMCAT_HOME")+"/bin/service.bat");
+			
+			if("true".equals(context.getStringValue("IS_WINDOWS"))){
+				if(!serverFile.exists()) throw new InstallException("tomcat can not register as service,because "+serverFile.getPath()+" cannot find");
+				StringBuffer result=new StringBuffer();
+				BufferedReader br=new BufferedReader(new FileReader(serverFile));
+				String s=null;
+				while((s=br.readLine())!=null){
+					if(s.trim().startsWith("--JvmMs")){
+						result.append(System.lineSeparator()+"  --JvmMs 512");
+					}else if(s.trim().startsWith("--JvmMx")){
+						result.append(System.lineSeparator()+"  --JvmMx 1024");
+					}else if(s.trim().startsWith("--JvmOptions")){
+						 int index=s.lastIndexOf("\"");
+						 StringBuffer buffer=new StringBuffer(s);
+					     buffer.insert(index, ";-DBOSSSOFT_HOME="+context.getStringValue("BOSSSOFT_HOME"));
+					     result.append(System.lineSeparator()+buffer.toString());
+					}else{
+						result.append(System.lineSeparator()+s);
+					}
+				}
+				br.close();
+				
+				/*s=result.toString();
+				s=s.replace("${BOSSSOFT_HOME}", context.getStringValue("BOSSSOFT_HOME")).replace("${jvmMs}", "512").replace("${jvmMx}", "1024");*/
+	            
+				BufferedWriter bw=new BufferedWriter(new OutputStreamWriter(new FileOutputStream(serverFile)));
+				bw.write(result.toString());
+				bw.close();
+			}
 		
 	}
 

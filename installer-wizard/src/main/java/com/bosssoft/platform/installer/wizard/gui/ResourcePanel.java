@@ -1,52 +1,41 @@
 package com.bosssoft.platform.installer.wizard.gui;
 
-import java.awt.Checkbox;
-import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Set;
 
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.Location;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
 
 import com.bosssoft.platform.installer.core.MainFrameController;
 import com.bosssoft.platform.installer.core.gui.AbstractControlPanel;
 import com.bosssoft.platform.installer.core.gui.AbstractSetupPanel;
 import com.bosssoft.platform.installer.core.option.ResourceDef;
-import com.bosssoft.platform.installer.core.util.ExpressionParser;
+import com.bosssoft.platform.installer.core.option.ResourceDefHelper;
 import com.bosssoft.platform.installer.core.util.I18nUtil;
-import com.bosssoft.platform.installer.core.util.InstallerFileManager;
-import com.bosssoft.platform.installer.core.util.ReflectUtil;
-import com.bosssoft.platform.installer.wizard.gui.as.TomcatEditorPanel;
-import com.bosssoft.platform.installer.wizard.gui.component.StepTitleLabel;
 import com.bosssoft.platform.installer.wizard.gui.component.XFileChooser;
+import com.bosssoft.platform.installer.wizard.util.ServerUtil;
 
-public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListener{
+public class ResourcePanel extends AbstractSetupPanel implements ActionListener{
 	Logger logger = Logger.getLogger(getClass());
-	private StepTitleLabel line = new StepTitleLabel();
-	private JTextArea introduction = new JTextArea();
-	private BossHomeChoosePanel bossHomeChoosePanel=new BossHomeChoosePanel();
-	private Map<String,ResourceDef> resourceMap=null;
+   private Map<String,ResourceDef> resourceMap=null;
 	
 	//Map<location,resourceName>
 	private Map<String,String> checkBoxMap=new HashMap<String, String>();
@@ -54,9 +43,7 @@ public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListe
 	//Map<resourceName,location>
 	private Map<String,String> fileChooserMap=new HashMap<String, String>();
 	
-	
-	
-	public ConfigRunEvnPanel(){
+	public ResourcePanel(){
 		try {
 			jbInit();
 		} catch (Exception ex) {
@@ -65,28 +52,16 @@ public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListe
 	}
 	
 	
-	private void jbInit() throws Exception {
+	private void jbInit() {
 		setLayout(null);
 		setOpaque(false);
-		this.line.setText(I18nUtil.getString("STEP.RUNEVN.CONF"));
-		this.line.setBounds(new Rectangle(26, 5, 581, 27));
-		add(line);
-		
-		this.introduction.setOpaque(false);
-		this.introduction.setText(I18nUtil.getString("CONFIG.RUNEVN.INTRODUCTION"));
-		this.introduction.setLineWrap(true);
-		this.introduction.setWrapStyleWord(true);
-		this.introduction.setEditable(false);
-		this.introduction.setBounds(new Rectangle(30, 30, 500, 50));
-		add(introduction);
-		
-		this.bossHomeChoosePanel.setBounds(new Rectangle(5, 103, 500, 60));
-		add(this.bossHomeChoosePanel);
-		
-		resourceMap=loadResource();//加载需要安装的运行组件
-	    int checkBoxy=168;
+		resourceMap=ResourceDefHelper.getResourceMap();//加载需要安装的运行组件
+	    /*int checkBoxy=168;
 	    int choosery=181;
-	    int labely=183;
+	    int labely=183;*/
+		int checkBoxy=0;
+	    int choosery=3;
+	    int labely=10;
 	    Collection<ResourceDef> values =resourceMap.values();
 		for (ResourceDef resourceDef : values) {
 			String name=resourceDef.getName();
@@ -115,10 +90,8 @@ public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListe
 			
 	    }
 		
-		
 	}
-
-
+	
 	private String locationToStr(Point location) {
 		double x=location.getX();
 		double y=location.getY();
@@ -138,34 +111,6 @@ public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListe
 	}
 
 
-	private Map<String,ResourceDef> loadResource() throws Exception {
-		Map<String,ResourceDef> resourceMap=new HashMap<String, ResourceDef>();
-		String filePath=InstallerFileManager.getResourcesDir()+File.separator+"resource"+File.separator+"resource.xml";
-		SAXReader reader=new SAXReader();
-		Document doc=reader.read(new File(filePath));
-		Iterator<Element> iter=doc.getRootElement().elementIterator("server");
-		while(iter.hasNext()){
-			ResourceDef def=new ResourceDef();
-			Element ele=iter.next();
-			def.setName(ele.elementText("name"));
-			def.setSourcePath(ExpressionParser.parseString(ele.elementText("sourcePath")));
-			def.setDestPath(ExpressionParser.parseString(ele.elementText("destPath")));
-			def.setHome(ExpressionParser.parseString(ele.elementText("home")));
-			String required=ele.elementText("required");
-			if("false".equalsIgnoreCase(required)) def.setRequired(false);
-			else if("true".equalsIgnoreCase(required)) def.setRequired(true);
-			
-			Iterator<Element> paramters=ele.element("paramters").elementIterator("paramter");
-			while(paramters.hasNext()){
-				Element paramter=paramters.next();
-				def.setParams(paramter.attributeValue("key"), paramter.attributeValue("value"));
-			}
-			resourceMap.put(def.getName(), def);
-		}
-		return resourceMap;
-	}
-
-
 	public void actionPerformed(ActionEvent ae) {
 		Object source = ae.getSource();
 		JCheckBox checkBox=(JCheckBox) source;
@@ -178,24 +123,89 @@ public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListe
 
 	@Override
 	public void initialize(String[] paramArrayOfString) {
-		this.bossHomeChoosePanel.initialize(paramArrayOfString);
 		
 	}
 
 	@Override
 	public void beforeShow() {
-		AbstractControlPanel controlPane = MainFrameController.getControlPanel();
-		controlPane.setButtonVisible("finish", false);
-		controlPane.setButtonVisible("help", false);
-		this.bossHomeChoosePanel.setContext(getContext());
 	
 	}
 
 	@Override
 	public boolean checkInput() {
-		if(filechooserCheck()&&bossHomeChoosePanel.checkInput()) return true;
+		if(filechooserCheck() && checkevn()) return true;
 		else return false;
 	}
+
+	//环境检查
+	private boolean checkevn() {
+		Iterator iter=checkBoxMap.entrySet().iterator();
+		while(iter.hasNext()){
+			List<Integer> port=new ArrayList<Integer>();
+			
+			Map.Entry<String,String> entry=(Entry) iter.next();
+			String appName=entry.getValue();
+			ResourceDef def=resourceMap.get(appName);
+			if(def.getPorts().size()==0) continue;
+			
+			Point checkBoxLoc=StrToLocation(entry.getKey());
+			JCheckBox checkbox=(JCheckBox) getComponentAt(checkBoxLoc);
+		    if(!checkbox.isSelected()){//使用自己配置的
+		    	Point chooserPoint=StrToLocation(fileChooserMap.get(appName));
+		    	XFileChooser fileChooser=(XFileChooser) getComponentAt(chooserPoint);
+		        String homePath=fileChooser.getText().trim();
+		        String configPath=def.getPortConfigFile();
+		        if(configPath!=null && !"".equals(configPath)){
+		        	configPath=configPath.replace("[home]", fileChooser.getText().trim());
+		        	port=setport(configPath,def.getPortConfigKeys());//配置文件中读取端口号
+		        }
+		    }else{
+		    	port=def.getPorts();
+		    }
+		    
+		    //检测是否有进程占用端口
+		    Set<Integer> pids=new HashSet<Integer>();
+		    if("true".equals(getContext().getStringValue("IS_WINDOWS"))){
+		    	pids=ServerUtil.searchProcess4Win(port);
+		    }else{
+		    	pids=ServerUtil.searchProcess4Linux(port);
+		    }
+		   
+		    if(pids.size()!=0){
+		    	int dialog_result=MainFrameController.showConfirmDialog(appName+I18nUtil.getString("CONFIG.RUNEVN.PORTCONFLICT"), I18nUtil.getString("DIALOG.TITLE.WARNING"), 0, 2);
+		    	if(dialog_result==0){
+		    		if("true".equals(getContext().getStringValue("IS_WINDOWS"))){
+		    			ServerUtil.killWithPid4Win(pids);
+				    }else{
+				    	ServerUtil.killWithPid4Linux(pids);
+				    }
+		    	}
+		    	return false;
+		    }
+		    
+		}
+		return true;
+	}
+
+
+
+	private List<Integer> setport(String configPath, List<String> portConfigKeys) {
+		List<Integer> ports=new ArrayList<Integer>();
+		   Properties props = new Properties();
+	       try {
+	        InputStream in = new BufferedInputStream (new FileInputStream(configPath));
+	        props.load(in);
+	        for (String key : portConfigKeys) {
+	            String value = props.getProperty (key);
+	            ports.add(Integer.valueOf(value));
+			}
+	      
+	       } catch (Exception e) {
+	        e.printStackTrace();
+	       }
+		return ports;
+	}
+
 
 	private boolean filechooserCheck() {
 		Iterator iter=checkBoxMap.entrySet().iterator();
@@ -226,7 +236,11 @@ public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListe
 		Collection<String> values=params.values();
 		for (String path : values) {
 			if(path.contains("[home]")){
-				String filePath=path.replace("[home]", home);
+				String filePath=path.replace("[home]", home).trim();
+				if(filePath.indexOf(" ")>-1) filePath=filePath.substring(0, filePath.indexOf(" "));
+				if(filePath.startsWith("%")){
+					 filePath=filePath.substring(filePath.indexOf(";")+1, filePath.length());
+				}
 				if(!new File(filePath).exists()){
 					MainFrameController.showMessageDialog(appName+"安装目录不合法", I18nUtil.getString("DIALOG.TITLE.ERROR"), 0);
 		    	    return false;
@@ -246,9 +260,6 @@ public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListe
 	@Override
 	public void beforeNext() {
 		logger.info("config run environment");
-		
-		this.bossHomeChoosePanel.beforeNext();
-		
 		StringBuffer installStr=new StringBuffer();
 		Iterator iter=checkBoxMap.entrySet().iterator();
 		while(iter.hasNext()){
@@ -288,7 +299,6 @@ public class ConfigRunEvnPanel extends AbstractSetupPanel implements ActionListe
 
 	@Override
 	public void afterActions() {
-		// TODO Auto-generated method stub
 		
 	}
 

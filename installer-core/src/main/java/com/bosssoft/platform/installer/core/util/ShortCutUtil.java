@@ -1,5 +1,6 @@
 package com.bosssoft.platform.installer.core.util;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import org.apache.log4j.Logger;
@@ -7,7 +8,7 @@ import org.apache.log4j.Logger;
 public class ShortCutUtil {
 	static Logger logger = Logger.getLogger(ShortCutUtil.class);
 
-	private static String SHORTCUT_EXE = InstallerFileManager.getInstallerHome() + "/bin/" ;
+	/*private static String SHORTCUT_EXE = InstallerFileManager.getInstallerHome() + "/bin/" ;
 
 	public static void createExeShortcut(String link, String exe, String ico, String workDir) {
 		String os = System.getProperty("os.name").toLowerCase();
@@ -21,9 +22,25 @@ public class ShortCutUtil {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}*/
+	public static void createExeShortcut(String linkName, String exe, String ico, String workDir){
+		/*JShellLink link = new JShellLink();
+		// 快捷方式存放地址
+		 link.setFolder(workDir); 
+		// 快捷方式名称
+		 link.setName(linkName);
+		 
+		 // 快捷方式指向地址
+		 link.setPath(exe);
+		 //图标
+		 link.setIconLocation(ico);
+		 link.save();*/
 	}
+	
 
-	public static void createUrlShortcut(String file, String url, String icon) {
+	public static void createUrlShortcut(String linkName, String url, String icon,String wordDir) {
+		String file=wordDir+File.separator+linkName+".url";
+		
 		String os = System.getProperty("os.name").toLowerCase();
 		if (os.indexOf("window") < 0) {
 			return;

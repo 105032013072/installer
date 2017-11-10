@@ -94,7 +94,8 @@ public class CreateShortcut implements IAction {
 		ShortCutUtil.createExeShortcut(groupPath + File.separator + I18nUtil.getString("SHORTCUT.STOP.EOSSERVER") + ".lnk", installDir + File.separator + "stopServer.cmd",
 				iconDir + "/Stop-Server.ico", workDir);
 		if (null != webPort) {
-			ShortCutUtil.createUrlShortcut(groupPath + "/" + "EOS Governor" + ".url", "http://localhost:" + webPort + "/governor/index.jsp", iconDir + "/EOSconsole.ico");
+			ShortCutUtil.createUrlShortcut("EOS Governor.url", "http://localhost:" + webPort + "/governor/index.jsp", "/EOSconsole.ico", groupPath);
+			
 		} else {
 			this.logger.warn("Can not create url link because webPort is null");
 		}

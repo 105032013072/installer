@@ -16,6 +16,7 @@ public class CompDef {
 	private String depends = "";
 	private String filesPath = null;
 	private String type = null;
+	private String chineseName=null;
 
 	private List<CompDef> comps = new ArrayList();
 
@@ -137,7 +138,17 @@ public class CompDef {
 		return (this.selected.equalsIgnoreCase("true"));
 	}
 
+	
+	
+	public String getChineseName() {
+		return chineseName;
+	}
+
+	public void setChineseName(String chineseName) {
+		this.chineseName = chineseName;
+	}
+
 	public String toString() {
-		return getNameKey();
+		return getChineseName()+"("+getNameKey()+")";
 	}
 }
