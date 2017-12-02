@@ -31,6 +31,7 @@ transient Logger logger = Logger.getLogger(getClass());
 		flyway.setDataSource(url, user, password);
 		flyway.setInitOnMigrate(true);
 		flyway.migrate(); 
+		
 	}
 
 	public void rollback(IContext context, Map params) throws InstallException {
