@@ -109,10 +109,9 @@ public class AppSvrPanel extends AbstractSetupPanel implements ActionListener {
 			logger.info("set app server: "+properties);
 		}
 		Server s = (Server) this.cbxAS.getSelectedItem();
-		String asType = this.cbxAS.getSelectedItem().toString();
-
-		getContext().setValue("APP_SERVER_TYPE", asType);
-		getContext().setValue("APP_SERVER_NAME", s.getName());
+		
+		getContext().setValue("APP_SERVER_TYPE", s.getType().concat(s.getVersion()));
+		getContext().setValue("APP_SERVER_NAME", s.getType());
 		getContext().setValue("APP_SERVER_VERSION", s.getVersion());
 
 		if ((s.supportedCluterDeploy()) && (this.chkCluster.isSelected()))

@@ -12,6 +12,7 @@ public class MySqlEditorPanel extends AbstractDBEditorPanel {
 
 	public MySqlEditorPanel() {
 		this.tfdPort.setText("3306");
+		this.tfdSID.setText("bosssoftdb");
 	}
 
 	public String getDBUrl() {
@@ -31,6 +32,7 @@ public class MySqlEditorPanel extends AbstractDBEditorPanel {
 	public Properties getProperties() {
 		Properties p = super.getProperties();
 		p.put("DB_TYPE", "mysql");
+		p.put("DB_IS_INSTALL",false);
 		return p;
 	}
 

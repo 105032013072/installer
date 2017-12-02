@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -220,4 +221,19 @@ public class XFileChooser extends JPanel {
 			XFileChooser.this.buttonActionPerformed(ae);
 		}
 	}
+	
+	public void addMouseListenerToPath(MouseListener listener){
+		this.tfdPath.addMouseListener(listener);
+	}
+	
+	public void addMouseListenerToBrowse(MouseListener listener){
+		this.btnBrowse.addMouseListener(listener);
+	}
+
+	public JTextField getTfdPath() {
+		return this.tfdPath;
+	}
+
+	
+	
 }

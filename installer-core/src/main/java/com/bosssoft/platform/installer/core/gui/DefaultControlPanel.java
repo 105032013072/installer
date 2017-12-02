@@ -16,12 +16,14 @@ public class DefaultControlPanel extends AbstractControlPanel implements ActionL
 	private JButton btnCancel = new JButton();
 	private JButton btnHelp = new JButton();
 	private JButton btnFinish = new JButton();
+	private JButton btnExe = new JButton();
 	public static final String BUTTON_PREVIOUS = "previous";
 	public static final String BUTTON_NEXT = "next";
 	public static final String BUTTON_CANCEL = "cancel";
 	public static final String BUTTON_HELP = "help";
 	public static final String BUTTON_FINISH = "finish";
-
+    public static final String BUTTON_EXE="run";
+	
 	public DefaultControlPanel() {
 		try {
 			jbInit();
@@ -32,13 +34,18 @@ public class DefaultControlPanel extends AbstractControlPanel implements ActionL
 
 	void jbInit() throws Exception {
 		setLayout(null);
-
+		
 		this.btnPrevious.setText(I18nUtil.getString("BUTTON_PREVIOUS"));
 		this.btnPrevious.setMnemonic('B');
 		this.btnPrevious.setOpaque(false);
 		this.btnNext.setText(I18nUtil.getString("BUTTON_NEXT"));
 		this.btnNext.setMnemonic('N');
 		this.btnNext.setOpaque(false);
+		this.btnExe.setText(I18nUtil.getString("BUTTON_EXE"));
+		this.btnExe.setOpaque(false);
+		this.btnExe.setVisible(false);
+		
+		
 		this.btnCancel.setText(I18nUtil.getString("BUTTON_CANCEL"));
 		this.btnCancel.setOpaque(false);
 		this.btnHelp.setText("");
@@ -53,7 +60,8 @@ public class DefaultControlPanel extends AbstractControlPanel implements ActionL
 		this.btnCancel.addActionListener(this);
 		this.btnHelp.addActionListener(this);
 		this.btnFinish.addActionListener(this);
-
+        this.btnExe.addActionListener(this);
+		
 		this.btnCancel.setBounds(new Rectangle(549, 10, 75, 21));
 		this.btnNext.setBounds(new Rectangle(460, 10, 77, 21));
 		this.btnNext.setMargin(new Insets(2, 2, 2, 2));
@@ -61,12 +69,16 @@ public class DefaultControlPanel extends AbstractControlPanel implements ActionL
 		this.btnPrevious.setMargin(new Insets(2, 2, 2, 2));
 		this.btnFinish.setMargin(new Insets(2, 2, 2, 2));
 		this.btnFinish.setBounds(new Rectangle(549, 10, 75, 21));
+		
+		this.btnExe.setMargin(new Insets(2, 2, 2, 2));
+		this.btnExe.setBounds(new Rectangle(549, 10, 75, 21));
 		setOpaque(false);
 		add(this.btnHelp, null);
 		add(this.btnPrevious, null);
 		add(this.btnNext, null);
 		add(this.btnCancel, null);
 		add(this.btnFinish, null);
+		add(this.btnExe,null);
 		MainFrameController.setDefaultButton(this.btnNext);
 	}
 
@@ -76,6 +88,7 @@ public class DefaultControlPanel extends AbstractControlPanel implements ActionL
 			this.btnPrevious.setEnabled(enable);
 			this.btnCancel.setEnabled(enable);
 			this.btnHelp.setEnabled(enable);
+			this.btnExe.setEnabled(enable);
 		} else if (key.equalsIgnoreCase(BUTTON_NEXT)) {
 			this.btnNext.setEnabled(enable);
 		} else if (key.equalsIgnoreCase(BUTTON_PREVIOUS)) {
@@ -85,7 +98,9 @@ public class DefaultControlPanel extends AbstractControlPanel implements ActionL
 		} else if (key.equalsIgnoreCase(BUTTON_HELP)) {
 			this.btnHelp.setEnabled(enable);
 		} else if (key.equalsIgnoreCase(BUTTON_FINISH)) {
-			this.btnHelp.setEnabled(enable);
+			this.btnFinish.setEnabled(enable);
+		}else if(key.equalsIgnoreCase(BUTTON_EXE)){
+			this.btnExe.setEnabled(enable);
 		}
 	}
 
@@ -95,6 +110,7 @@ public class DefaultControlPanel extends AbstractControlPanel implements ActionL
 			this.btnPrevious.setVisible(visible);
 			this.btnCancel.setVisible(visible);
 			this.btnHelp.setVisible(visible);
+			this.btnExe.setVisible(visible);
 		} else if (key.equalsIgnoreCase(BUTTON_NEXT)) {
 			this.btnNext.setVisible(visible);
 		} else if (key.equalsIgnoreCase(BUTTON_PREVIOUS)) {
@@ -105,6 +121,8 @@ public class DefaultControlPanel extends AbstractControlPanel implements ActionL
 			this.btnHelp.setVisible(visible);
 		} else if (key.equalsIgnoreCase(BUTTON_FINISH)) {
 			this.btnFinish.setVisible(visible);
+		}else if(key.equalsIgnoreCase(BUTTON_EXE)){
+			this.btnExe.setVisible(visible);
 		}
 	}
 
@@ -112,7 +130,7 @@ public class DefaultControlPanel extends AbstractControlPanel implements ActionL
 		Object source = ae.getSource();
 		if (source == this.btnPrevious)
 			this.cmdListener.doCommand("PREVIOUS", null);
-		else if (source == this.btnNext)
+		else if (source == this.btnNext||source == this.btnExe)
 			this.cmdListener.doCommand("NEXT", null);
 		else if (source == this.btnCancel)
 			this.cmdListener.doCommand("CANCEL", null);
@@ -152,5 +170,7 @@ public class DefaultControlPanel extends AbstractControlPanel implements ActionL
 			this.btnHelp.setText(text);
 		else if (key.equalsIgnoreCase(BUTTON_FINISH))
 			this.btnFinish.setText(text);
+		else if(key.equalsIgnoreCase(BUTTON_EXE))
+			this.btnExe.setText(text);
 	}
 }

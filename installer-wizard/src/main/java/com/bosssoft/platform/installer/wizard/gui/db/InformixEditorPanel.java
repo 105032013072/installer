@@ -31,12 +31,10 @@ public class InformixEditorPanel extends AbstractDBEditorPanel {
 		this.tfdUser.setBounds(new Rectangle(133, 118, 237, 21));
 		this.tfdPassword.setBounds(new Rectangle(133, 148, 237, 21));
 		this.tfdIP.setBounds(new Rectangle(133, 0, 237, 21));
-		this.lblDbDriver.setBounds(new Rectangle(18, 236, 87, 16));
-		this.fileChooser.setBounds(new Rectangle(133, 206, 237, 21));
+		//this.fileChooser.setBounds(new Rectangle(133, 206, 237, 21));
 		this.btnDBTest.setBounds(new Rectangle(250, 262, 120, 21));
-		this.chkUserDbDriver.setBounds(new Rectangle(0, 204, 130, 25));
 		this.tfdPort.setBounds(new Rectangle(133, 29, 54, 21));
-		this.cbxDrivers.setBounds(new Rectangle(133, 235, 237, 21));
+		//this.cbxDrivers.setBounds(new Rectangle(133, 235, 237, 21));
 		this.lblSID.setBounds(new Rectangle(0, 60, 94, 16));
 		this.lblUser.setBounds(new Rectangle(0, 119, 96, 16));
 		this.lbPassword.setBounds(new Rectangle(0, 151, 97, 16));
@@ -56,8 +54,8 @@ public class InformixEditorPanel extends AbstractDBEditorPanel {
 
 		this.tfdInformixName.getDocument().addDocumentListener(this.documentListener);
 
-		this.fileChooser.setFileSelectionMode(0);
-		this.fileChooser.setMultiSelectionEnabled(true);
+		//this.fileChooser.setFileSelectionMode(0);
+		//this.fileChooser.setMultiSelectionEnabled(true);
 	}
 
 	public static void main(String[] args) {

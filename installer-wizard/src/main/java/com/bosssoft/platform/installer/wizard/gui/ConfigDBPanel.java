@@ -1,5 +1,6 @@
 package com.bosssoft.platform.installer.wizard.gui;
 
+import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,7 +11,9 @@ import java.util.Properties;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 import org.apache.log4j.Logger;
 
@@ -31,9 +34,8 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 	private JLabel lblDB = new JLabel();
 	private JComboBox cbxDb = new JComboBox();
 
-	private JLabel lblDataSourceName = new JLabel();
-	private JTextField tfdDataSourceName = new JTextField();
-
+	private JTextArea explain = new JTextArea();
+	
 	private AbstractDBEditorPanel dbEditorPanel = null;
 	private HashMap editorPanelMap = new HashMap();
 
@@ -52,23 +54,26 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 		this.line.setText(I18nUtil.getString("STEP.DBCONFIG"));
 		this.line.setBounds(new Rectangle(26, 5, 581, 27));
 
-		this.lblDataSourceName.setText(I18nUtil.getString("STEP.DATASOURCE.NAME"));
-		this.lblDataSourceName.setBounds(new Rectangle(30, 38, 130, 16));
-		this.tfdDataSourceName.setText("defaultDataSource");
-		this.tfdDataSourceName.setBounds(new Rectangle(162, 35, 240, 20));
-
 		this.lblDB.setText(I18nUtil.getString("DBCONFIG.LABEL.DBTYPE"));
-		this.lblDB.setBounds(new Rectangle(30, 61, 130, 16));
+		this.lblDB.setBounds(new Rectangle(30, 36, 130, 16));
 
-		this.cbxDb.setBounds(new Rectangle(162, 60, 240, 20));
-
+		this.cbxDb.setBounds(new Rectangle(162, 35, 240, 20));
+		
+		this.explain.setBounds(new Rectangle(27, 270, 382, 90));
+		this.explain.setAlignmentY(0.0F);
+		this.explain.setBackground(Color.WHITE);
+		this.explain.setOpaque(false);
+		this.explain.setEditable(false);
+		this.explain.setLineWrap(true);
+		this.explain.setWrapStyleWord(true);
+		this.explain.setBorder(new TitledBorder(I18nUtil.getString("DB.LABEL.EXPLAIN")));
+        this.explain.setText(I18nUtil.getString("DB.CONTENT.EXPLAIN"));
+		
 		loadSupportedDBSvr();
 		this.cbxDb.addActionListener(this);
 
 		add(this.line, null);
-
-		add(this.lblDataSourceName, null);
-		add(this.tfdDataSourceName, null);
+        add(this.explain,null);
 
 		add(this.lblDB, null);
 		add(this.cbxDb, null);
@@ -87,10 +92,10 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 			getContext().putAll(properties);
 			Server dbServer = (Server) this.cbxDb.getSelectedItem();
 
-			getContext().setValue("DB_TYPE", dbServer.getName());
+			getContext().setValue("DB_TYPE", dbServer.getType());
 			getContext().setValue("DB_VERSION", dbServer.getVersion());
 
-			getContext().setValue("DB_DS_JNDI_NAME", this.tfdDataSourceName.getText().trim());
+			getContext().setValue("DB_DS_JNDI_NAME", "datasource");
 		
 			//记录日志
 		   logger.info("config DB: "+properties);
@@ -168,7 +173,8 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 				this.dbEditorPanel = ((AbstractDBEditorPanel) ReflectUtil.newInstanceBy(className));
 				this.editorPanelMap.put(dbServer.getName(), this.dbEditorPanel);
 			}
-			this.dbEditorPanel.setBounds(new Rectangle(30, 85, 390, 320));
+			this.dbEditorPanel.setBounds(new Rectangle(30, 60, 390, 320));
+			
 			add(this.dbEditorPanel, null);
 			this.dbEditorPanel.chkInitDB.setEnabled(true);
 		}

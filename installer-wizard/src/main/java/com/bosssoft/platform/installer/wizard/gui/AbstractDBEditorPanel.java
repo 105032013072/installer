@@ -47,21 +47,16 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 	protected JLabel lblUser = new JLabel();
 	protected JLabel lblSID = new JLabel();
 
-	protected JComboBox cbxDrivers = new JComboBox();
 
 	protected JTextField tfdPort = new JTextField();
 
-	protected JCheckBox chkUserDbDriver = new JCheckBox();
 	protected JButton btnDBTest = new JButton();
-	protected JLabel lblDbDriver = new JLabel();
 	protected JTextField tfdIP = new JTextField();
 
 	protected JTextField tfdInformixName = new JTextField();
 
 	protected JPasswordField tfdPassword = new JPasswordField();
 	protected JTextField tfdUser = new JTextField();
-	protected XFileChooser fileChooser = new XFileChooser();
-	protected XFileChooser SqlScriptChooser=new XFileChooser();
 	
 	protected TxtDocumentListener documentListener = new TxtDocumentListener();
 	private EditorActionListener actionListener = new EditorActionListener();
@@ -78,30 +73,26 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 	private void jbInit() {
 		setLayout(null);
 		setOpaque(false);
-		this.lblDbDriver.setText(I18nUtil.getString("DBCONFIG.LABEL.DRIVER"));
 		this.btnDBTest.setText(I18nUtil.getString("DBCONFIG.BUTTON.CONTEST"));
 		this.btnDBTest.setMnemonic('T');
 		this.btnDBTest.setMargin(new Insets(2, 2, 2, 2));
 		this.btnDBTest.setOpaque(false);
-		this.chkUserDbDriver.setText(I18nUtil.getString("DBCONFIG.LABEL.USERDRIVER"));
-		this.chkUserDbDriver.setOpaque(false);
-		this.chkUserDbDriver.setMargin(new Insets(0, 0, 0, 0));
 
 		this.tfdUser.setBounds(new Rectangle(133, 88, 237, 21));
 		this.tfdPassword.setBounds(new Rectangle(133, 118, 237, 21));
 		this.tfdIP.setBounds(new Rectangle(133, 0, 237, 21));
 		this.tfdIP.setText("127.0.0.1");
-		this.lblDbDriver.setBounds(new Rectangle(18, 206, 87, 16));
-		this.btnDBTest.setBounds(new Rectangle(260, 270, 120, 21));
-		this.chkUserDbDriver.setBounds(new Rectangle(0, 174, 130, 25));
+		
+		this.btnDBTest.setBounds(new Rectangle(260,180, 120, 21));
+		
 		this.tfdPort.setBounds(new Rectangle(133, 29, 54, 21));
-		this.cbxDrivers.setBounds(new Rectangle(133, 205, 237, 21));
+		
 		this.lblSID.setBounds(new Rectangle(0, 60, 94, 16));
 		this.lblUser.setBounds(new Rectangle(0, 89, 96, 16));
 		this.lbPassword.setBounds(new Rectangle(0, 121, 97, 16));
 		this.tfdSID.setBounds(new Rectangle(133, 58, 237, 21));
 
-		this.chkInitDB.setBounds(new Rectangle(0, 231, 200, 25));
+		this.chkInitDB.setBounds(new Rectangle(0, 175, 200, 25));
 		this.lblTabSpace.setBounds(new Rectangle(0, 251, 380, 80));
 		this.lblTabSpace.setForeground(Color.red);
 		this.lblTabSpace.setVerticalAlignment(1);
@@ -111,7 +102,8 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 		this.lblUrl.setBounds(new Rectangle(0, 149, 101, 16));
 		this.lblIP.setBounds(new Rectangle(0, 2, 64, 16));
 		this.tfdUrl.setBounds(new Rectangle(133, 147, 237, 21));
-
+        this.tfdUrl.setEnabled(false);
+		
 		this.lblSID.setText(I18nUtil.getString("DBCONFIG.LABEL.DBNAME"));
 		this.lblUser.setText(I18nUtil.getString("DBCONFIG.LABEL.USER"));
 		this.lbPassword.setText(I18nUtil.getString("DBCONFIG.LABEL.PASSWORD"));
@@ -121,43 +113,23 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 		this.lblPort.setText(I18nUtil.getString("DBCONFIG.LABEL.PORT"));
 		this.lblUrl.setText(I18nUtil.getString("DBCONFIG.LABEL.URL"));
 		this.lblIP.setText(I18nUtil.getString("DBCONFIG.LABEL.IP"));
-		this.cbxDrivers.setEnabled(false);
-
-		this.fileChooser.setButtonText(I18nUtil.getString("BUTTON.BROWSE"));
-		this.fileChooser.setButtonmnMnemonic('R');
-		this.fileChooser.setEnabled(false);
-		this.fileChooser.setBounds(new Rectangle(133, 176, 237, 21));
 		
-		this.SqlScriptChooser.setButtonText(I18nUtil.getString("BUTTON.BROWSE"));
-		this.SqlScriptChooser.setButtonmnMnemonic('R');
-		this.SqlScriptChooser.setEnabled(false);
-		this.SqlScriptChooser.setBounds(new Rectangle(133, 235, 237, 21));
 		add(this.lblPort, null);
 		add(this.tfdSID, null);
 		add(this.tfdPort, null);
 		add(this.tfdUrl, null);
-		add(this.chkUserDbDriver, null);
-		add(this.lblDbDriver, null);
 		add(this.chkInitDB, null);
 		add(this.lblTabSpace, null);
 		add(this.tfdPassword, null);
 		add(this.btnDBTest, null);
-		add(this.cbxDrivers, null);
 		add(this.lbPassword, null);
 		add(this.lblUser, null);
 		add(this.lblUrl, null);
 		add(this.tfdUser, null);
-		add(this.fileChooser, null);
+		
 		add(this.lblSID, null);
 		add(this.tfdIP, null);
 		add(this.lblIP, null);
-		add(this.SqlScriptChooser,null);
-
-		this.fileChooser.setFileSelectionMode(0);
-		this.fileChooser.setMultiSelectionEnabled(true);
-
-		this.SqlScriptChooser.setFileSelectionMode(0);
-		this.SqlScriptChooser.setMultiSelectionEnabled(true);
 		
 		this.tfdUser.getDocument().addDocumentListener(this.documentListener);
 		this.tfdPassword.getDocument().addDocumentListener(this.documentListener);
@@ -166,9 +138,6 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 		this.tfdSID.getDocument().addDocumentListener(this.documentListener);
 
 		this.btnDBTest.addActionListener(this.actionListener);
-		this.fileChooser.addActionListener(this.actionListener);
-
-		this.chkUserDbDriver.addActionListener(this.actionListener);
 		this.chkInitDB.addActionListener(this.actionListener);
 	}
 
@@ -182,32 +151,6 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 
 	public abstract String getJDBCDriverClassName();
 
-	private void refreshLoadUserDriver() {
-		this.fileChooser.setEnabled(this.chkUserDbDriver.isSelected());
-		this.cbxDrivers.setEnabled(this.chkUserDbDriver.isSelected());
-	}
-	
-     public void refreshLoadSqlScript() {
-        this.SqlScriptChooser.setEnabled(this.chkInitDB.isSelected());
-	 }
-
-	public void loadJDBCDriverFromFile() {
-		File[] files = this.fileChooser.getSelectedFiles();
-		if ((files == null) || (files.length == 0))
-			return;
-		loadJDBCDriverFromFile(files);
-	}
-
-	public void loadJDBCDriverFromFile(File[] files) {
-		this.cbxDrivers.removeAllItems();
-		List clazzList = DBConnectionUtil.getAllDriverClassName(files);
-		if (clazzList.size() == 0) {
-			MainFrameController.showMessageDialog(I18nUtil.getString("DBINIT.MSG.NODBDRIVER"), I18nUtil.getString("DIALOG.TITLE.ERROR"), 0);
-			return;
-		}
-		for (int i = 0; i < clazzList.size(); i++)
-			this.cbxDrivers.addItem(clazzList.get(i));
-	}
 
 	public String testDBConnection() {
 		String result = check();
@@ -235,12 +178,7 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 		String jdbcDriverClass = null;
 		String driverFiles = null;
 
-		if (!this.chkUserDbDriver.isSelected()) {
-			jdbcDriverClass = getJDBCDriverClassName();
-		} else {
-			driverFiles = this.fileChooser.getFilePath();
-			jdbcDriverClass = this.cbxDrivers.getSelectedItem().toString();
-		}
+		jdbcDriverClass = getJDBCDriverClassName();
 
 		int rtn = DBConnectionUtil.validateDBConfig(driverFiles, jdbcDriverClass, jdbcUrl, user, password);
 		return rtn;
@@ -272,25 +210,10 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 		p.put("DB_SERVER_PORT", this.tfdPort.getText().trim());
 		p.put("DB_URL", this.tfdUrl.getText().trim());
 		p.put("DB_IS_INIT", Boolean.toString(this.chkInitDB.isSelected()));
-		p.put("DB_IS_DEFAULT_JAR", Boolean.toString(!this.chkUserDbDriver.isSelected()));
+		p.put("DB_IS_DEFAULT_JAR",true);
 
-		if (this.chkUserDbDriver.isSelected()) {
-			p.put("DB_JDBC_LIBS", this.fileChooser.getFilePath());
-			if (this.cbxDrivers.getSelectedItem() != null)
-				p.put("DB_DRIVER", this.cbxDrivers.getSelectedItem().toString());
-		} else {
-			p.put("DB_DRIVER", getJDBCDriverClassName());
-			p.put("DB_JDBC_LIBS", "");
-		}
-
-		if(this.chkInitDB.isSelected()){
-			StringBuffer strFiles=new StringBuffer();
-			File[] files=SqlScriptChooser.getSelectedFiles();
-			for (File file : files) {
-				strFiles.append(file.getPath()+",");
-			}
-			p.put("DB_INIT_SQLSCRIPT", strFiles.toString());
-		}
+		p.put("DB_DRIVER", getJDBCDriverClassName());
+		p.put("DB_JDBC_LIBS", "");
 		
 		return p;
 	}
@@ -309,10 +232,10 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 			return I18nUtil.getString("DBCONFIG.MSG.USERNULL");
 		}
 
-		if (this.tfdPassword.getPassword().length == 0) {
+		/*if (this.tfdPassword.getPassword().length == 0) {
 			return I18nUtil.getString("DBCONFIG.MSG.PWDNULL");
 		}
-
+*/
 		String port = this.tfdPort.getText();
 		if ((StringUtils.isEmpty(port)) || (StringUtils.isBlank(port))) {
 			return I18nUtil.getString("CHOOSEIP.PORT.EMPTY");
@@ -321,14 +244,6 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 			return I18nUtil.getString("CHOOSEIP.PORT.INVALID");
 		}
 
-		if (this.chkUserDbDriver.isSelected()) {
-			if (this.fileChooser.getFilePath().trim().length() == 0) {
-				return I18nUtil.getString("DBCONFIG.MSG.USERDIVERJARNULL");
-			}
-			if (this.cbxDrivers.getItemCount() == 0) {
-				return I18nUtil.getString("DBCONFIG.MSG.USERDRIVERCLASSNULL");
-			}
-		}
 
 		if (this.tfdSID.getText().trim().length() == 0) {
 			return I18nUtil.getString("DBCONFIG.MSG.USERNAMENULL");
@@ -405,13 +320,8 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 
 		public void actionPerformed(ActionEvent ae) {
 			Object source = ae.getSource();
-			if (AbstractDBEditorPanel.this.fileChooser == source) {
-				AbstractDBEditorPanel.this.loadJDBCDriverFromFile();
-			} else if (AbstractDBEditorPanel.this.chkInitDB == source) {
+			 if (AbstractDBEditorPanel.this.chkInitDB == source) {
 				AbstractDBEditorPanel.this.resetTabSpaceText();
-				AbstractDBEditorPanel.this.refreshLoadSqlScript();
-			} else if (AbstractDBEditorPanel.this.chkUserDbDriver == source) {
-				AbstractDBEditorPanel.this.refreshLoadUserDriver();
 			} else if (AbstractDBEditorPanel.this.btnDBTest == source) {
 				String message = AbstractDBEditorPanel.this.testDBConnection();
 				if (message != null)

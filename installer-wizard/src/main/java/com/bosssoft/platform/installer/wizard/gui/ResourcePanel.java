@@ -4,6 +4,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,10 +22,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
 
+import com.bosssoft.platform.installer.core.InstallException;
 import com.bosssoft.platform.installer.core.MainFrameController;
 import com.bosssoft.platform.installer.core.gui.AbstractControlPanel;
 import com.bosssoft.platform.installer.core.gui.AbstractSetupPanel;
@@ -33,7 +38,7 @@ import com.bosssoft.platform.installer.core.util.I18nUtil;
 import com.bosssoft.platform.installer.wizard.gui.component.XFileChooser;
 import com.bosssoft.platform.installer.wizard.util.ServerUtil;
 
-public class ResourcePanel extends AbstractSetupPanel implements ActionListener{
+public class ResourcePanel extends AbstractSetupPanel implements ActionListener,MouseListener{
 	Logger logger = Logger.getLogger(getClass());
    private Map<String,ResourceDef> resourceMap=null;
 	
@@ -42,6 +47,9 @@ public class ResourcePanel extends AbstractSetupPanel implements ActionListener{
 	
 	//Map<resourceName,location>
 	private Map<String,String> fileChooserMap=new HashMap<String, String>();
+	
+	//Map<resourceName,location>
+	private Map<String,String> fileChoosePathMap=new HashMap<String, String>();//fileChooser中路径文本空的位置
 	
 	public ResourcePanel(){
 		try {
@@ -59,14 +67,16 @@ public class ResourcePanel extends AbstractSetupPanel implements ActionListener{
 	    /*int checkBoxy=168;
 	    int choosery=181;
 	    int labely=183;*/
-		int checkBoxy=0;
+		//int checkBoxy=0;
+		int checkBoxy=2;
 	    int choosery=3;
 	    int labely=10;
 	    Collection<ResourceDef> values =resourceMap.values();
 		for (ResourceDef resourceDef : values) {
 			String name=resourceDef.getName();
 			JCheckBox checkBox=new JCheckBox("安装"+name);
-			checkBox.setBounds(new Rectangle(30, checkBoxy, 150, 16));
+			//checkBox.setBounds(new Rectangle(30, checkBoxy, 145, 16));
+			checkBox.setBounds(new Rectangle(30, checkBoxy, 120, 16));
 			checkBoxy=checkBoxy+50;
 			checkBox.setOpaque(false);
 			checkBox.setSelected(true);
@@ -75,18 +85,24 @@ public class ResourcePanel extends AbstractSetupPanel implements ActionListener{
 			checkBoxMap.put(locationToStr(checkBox.getLocation()), name);
 			add(checkBox);
 			
-			JLabel label=new JLabel("请设置"+name+" home:");
+			/*JLabel label=new JLabel("请设置"+name+" home:");
 			label.setBounds(new Rectangle(30, labely,150, 25));
 			labely=labely+50;
-			add(label);
+			add(label);*/
 			
 			XFileChooser fileChooser=new XFileChooser();
 			fileChooser.setButtonText(I18nUtil.getString("BUTTON.BROWSE"));
 			fileChooser.setEnabled(false);
-			fileChooser.setBounds(new Rectangle(180, choosery, 237, 21));
+			fileChooser.getTfdPath().setEnabled(false);
+			//fileChooser.setBounds(new Rectangle(180, choosery, 237, 21));
+			fileChooser.setBounds(new Rectangle(155, choosery, 272, 21));
+		    fileChooser.addMouseListenerToPath(this);;
+		    fileChooser.getTextField().setName(name);
 			choosery=choosery+50;
 			fileChooserMap.put(name, locationToStr(fileChooser.getLocation()));
-			add(fileChooser);
+			add(fileChooser); 
+			
+			fileChoosePathMap.put(name, locationToStr(fileChooser.getTfdPath().getLocation()));
 			
 	    }
 		
@@ -118,6 +134,15 @@ public class ResourcePanel extends AbstractSetupPanel implements ActionListener{
 		Point ponit=StrToLocation(fileChooserMap.get(appName));
 		XFileChooser chooser=(XFileChooser) getComponentAt(ponit);
 		chooser.setEnabled(!checkBox.isSelected());
+		chooser.getTfdPath().setEnabled(!checkBox.isSelected());
+		
+		//显示默认的安装路径
+		if(checkBox.isSelected()){
+			String homePath=resourceMap.get(appName).getHome();
+			chooser.setText(homePath);
+		}else{
+			chooser.setText("请选择"+appName+"的目录");
+		}
 		
 	}
 
@@ -128,7 +153,13 @@ public class ResourcePanel extends AbstractSetupPanel implements ActionListener{
 
 	@Override
 	public void beforeShow() {
-	
+	   //显示默认的安装路径
+		for (Map.Entry<String,String> entry : fileChooserMap.entrySet()) {
+			Point chooserPoint=StrToLocation(entry.getValue());
+	    	XFileChooser fileChooser=(XFileChooser) getComponentAt(chooserPoint);
+	        String homePath=resourceMap.get(entry.getKey()).getHome();
+	    	fileChooser.setText(homePath);
+		}
 	}
 
 	@Override
@@ -299,6 +330,46 @@ public class ResourcePanel extends AbstractSetupPanel implements ActionListener{
 
 	@Override
 	public void afterActions() {
+		
+	}
+
+
+	public void mouseClicked(MouseEvent arg0) {
+		
+	}
+
+
+	public void mouseEntered(MouseEvent ae) {
+		Object source = ae.getSource();
+		JTextField fileChoosertext=(JTextField) source;
+		String appName=fileChoosertext.getName();
+		if(fileChoosertext.isEnabled()){
+			 fileChoosertext.setText("");
+		}
+			
+	}
+
+
+	public void mouseExited(MouseEvent ae) {
+		
+		Object source = ae.getSource();
+		JTextField fileChoosertext=(JTextField) source;
+		String appName=fileChoosertext.getName();
+		if(fileChoosertext.isEnabled()){
+			fileChoosertext.setText("请选择"+appName+"目录");
+		}
+		
+	}
+
+
+	public void mousePressed(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void mouseReleased(MouseEvent arg0) {
+		// TODO Auto-generated method stub
 		
 	}
 

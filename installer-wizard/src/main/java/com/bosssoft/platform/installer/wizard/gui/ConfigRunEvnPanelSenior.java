@@ -50,7 +50,6 @@ public class ConfigRunEvnPanelSenior extends AbstractSetupPanel implements Mouse
 	Logger logger = Logger.getLogger(getClass());
 	private StepTitleLabel line = new StepTitleLabel();
 	private JTextArea introduction = new JTextArea();
-	private BossHomeChoosePanel bossHomeChoosePanel=new BossHomeChoosePanel();
 	private JLabel seniorIcon=new JLabel();
 	private JLabel seniorLabel=new JLabel();
 	
@@ -78,17 +77,14 @@ public class ConfigRunEvnPanelSenior extends AbstractSetupPanel implements Mouse
 		this.introduction.setLineWrap(true);
 		this.introduction.setWrapStyleWord(true);
 		this.introduction.setEditable(false);
-		this.introduction.setBounds(new Rectangle(30, 30, 500, 50));
+		this.introduction.setBounds(new Rectangle(30, 60, 500, 50));
 		add(introduction);
 		
-		this.bossHomeChoosePanel.setBounds(new Rectangle(5, 103, 500, 60));
-		add(this.bossHomeChoosePanel);
-		
-		this.seniorLabel.setBounds(new Rectangle(352, 140, 100, 60));
+		this.seniorLabel.setBounds(new Rectangle(352, 110, 100, 60));
 		this.seniorLabel.setText(I18nUtil.getString("CONFIG.RUNEVN.SENIORLABLE"));
 		add(this.seniorLabel);
 		
-		this.seniorIcon.setBounds(new Rectangle(362, 140, 100, 60));
+		this.seniorIcon.setBounds(new Rectangle(362, 110, 100, 60));
 		this.seniorIcon.setVerifyInputWhenFocusTarget(true);
 		this.seniorIcon.setHorizontalAlignment(0);
 		String iconPath=InstallerFileManager.getImageDir()+"/down.jpg";
@@ -98,7 +94,7 @@ public class ConfigRunEvnPanelSenior extends AbstractSetupPanel implements Mouse
 		
 		add(this.seniorIcon);
 		
-		this.resourcePanel.setBounds(new Rectangle(5, 190, 500, 200));
+		this.resourcePanel.setBounds(new Rectangle(5, 160, 500, 200));
 		add(this.resourcePanel);
 		
 		this.resourcePanel.setVisible(false);
@@ -106,7 +102,6 @@ public class ConfigRunEvnPanelSenior extends AbstractSetupPanel implements Mouse
 
 	@Override
 	public void initialize(String[] paramArrayOfString) {
-		this.bossHomeChoosePanel.initialize(paramArrayOfString);
 		
 	}
 
@@ -115,13 +110,13 @@ public class ConfigRunEvnPanelSenior extends AbstractSetupPanel implements Mouse
 		AbstractControlPanel controlPane = MainFrameController.getControlPanel();
 		controlPane.setButtonVisible("finish", false);
 		controlPane.setButtonVisible("help", false);
-		this.bossHomeChoosePanel.setContext(getContext());
 	    this.resourcePanel.setContext(getContext());
+	    this.resourcePanel.beforeShow();
 	}
 
 	@Override
 	public boolean checkInput() {
-		if( bossHomeChoosePanel.checkInput() && resourcePanel.checkInput()) return true;
+		if( resourcePanel.checkInput()) return true;
 		else return false;
 	}
 
@@ -134,9 +129,11 @@ public class ConfigRunEvnPanelSenior extends AbstractSetupPanel implements Mouse
 	@Override
 	public void beforeNext() {
 		logger.info("config run environment");
-		
-		this.bossHomeChoosePanel.beforeNext();
-	    this.resourcePanel.beforeNext();
+		//设置bosssoftHome
+		String dir = getContext().getStringValue("INSTALL_DIR")+File.separator+"BOSSSOFT_HOME";
+		getContext().setValue("BOSSSOFT_HOME", dir);
+		logger.info("set bosssoft_home: "+dir);
+		this.resourcePanel.beforeNext();
 	}
 
 	@Override

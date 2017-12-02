@@ -12,8 +12,10 @@ public class I18nUtil {
 	private static Locale currentLocale = null;
 
 	static {
-		if (Locale.getDefault().toString().equals("zh_CN"))
+		if (Locale.getDefault().toString().equals("zh_CN")){
 			currentLocale = Locale.getDefault();
+		}
+			
 		else {
 			currentLocale = Locale.ENGLISH;
 		}

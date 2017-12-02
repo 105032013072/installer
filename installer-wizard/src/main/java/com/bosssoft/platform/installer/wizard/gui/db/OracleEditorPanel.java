@@ -21,6 +21,8 @@ public class OracleEditorPanel extends AbstractDBEditorPanel {
 	public void initUI() {
 		this.lblSID.setText("SID:");
 		this.tfdPort.setText("1521");
+		this.tfdSID.setText("bosssoftdb");
+		
 	}
 
 	public static void main(String[] args) {
@@ -33,6 +35,7 @@ public class OracleEditorPanel extends AbstractDBEditorPanel {
 
 	public Properties getProperties() {
 		Properties p = super.getProperties();
+		p.put("DB_IS_INSTALL", false);
 		return p;
 	}
 

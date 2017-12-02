@@ -51,7 +51,7 @@ public class ConfigJvmAppsvr implements IAction{
 				String s=null;
 				while((s=br.readLine())!=null){
 					if(s.trim().startsWith("--JvmMs")){
-						result.append(System.lineSeparator()+"  --JvmMs 512");
+						result.append(System.lineSeparator()+"  --JvmMs 512 ^");
 					}else if(s.trim().startsWith("--JvmMx")){
 						result.append(System.lineSeparator()+"  --JvmMx 1024");
 					}else if(s.trim().startsWith("--JvmOptions")){

@@ -26,6 +26,8 @@ public class ProductInstallConfigs {
 		xStream.useAttributeFor("editorPanel", String.class);
 		xStream.useAttributeFor("clusterEditorPanel", String.class);
 		xStream.useAttributeFor("jars", String.class);
+		xStream.useAttributeFor("desc", String.class);
+		xStream.useAttributeFor("type", String.class);
 
 		xStream.addImplicitCollection(Servers.class, "servers", Server.class);
 	}
