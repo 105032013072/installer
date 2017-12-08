@@ -115,13 +115,14 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 	}
 
 	public boolean checkInput() {
-		this.dbEditorPanel.setContext(getContext());
+		return true;
+		/*this.dbEditorPanel.setContext(getContext());
 		getContext().putAll(this.dbEditorPanel.getProperties());
 		if (this.dbEditorPanel == null) {
 			return false;
 		}
 
-		/*if ("PE".equalsIgnoreCase(this.context.getStringValue("EDITION"))) {
+		if ("PE".equalsIgnoreCase(this.context.getStringValue("EDITION"))) {
 			boolean exist = CheckDataSourceExistAction.checkDataSourceExist(this.context, this.tfdDataSourceName.getText().trim());
 			if (exist) {
 				String msg = I18nUtil.getString("CheckDataSourceExistAction.Exist.Error");
@@ -129,7 +130,7 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 				return false;
 			}
 
-		}*/
+		}
 
 		String app_server_name = this.context.getStringValue("APP_SERVER_NAME");
 		if (("WebLogic".indexOf(app_server_name) != -1) || ("WebSphere6.0".indexOf(app_server_name) != -1)) {
@@ -139,7 +140,7 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 				return false;
 			}
 		}
-		return this.dbEditorPanel.checkInput();
+		return this.dbEditorPanel.checkInput();*/
 	}
 
 	public void initialize(String[] parameters) {

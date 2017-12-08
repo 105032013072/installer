@@ -97,36 +97,42 @@ public class SetVersion implements IAction{
 	    xmlWriter.close();
 	}
 	private void createFile(String filepath) {
-		File file=new File(filepath);
-		File parentFile=file.getParentFile();
-		if(!parentFile.exists()){
+		File file = new File(filepath);
+		File parentFile = file.getParentFile();
+		if (!parentFile.exists()) {
 			parentFile.mkdirs();
 		}
 		try {
 			file.createNewFile();
 		} catch (IOException e) {
-		   throw new InstallException(e);
+			throw new InstallException(e);
 		}
 		
 	}
-	private void createAppVersion(IContext context, Element app) {
-	try{
-		String targetName=app.attributeValue("name");
-		if(isInstalled(targetName, context)){
-			String appVFile=context.getStringValue("BOSSSOFT_HOME")+File.separator+app.attributeValue("name")+File.separator+"version.xml";
-			if(!new File(appVFile).exists()) new File(appVFile).createNewFile();
-			
-			BufferedWriter bw = new BufferedWriter (new OutputStreamWriter (new FileOutputStream(appVFile)));
-			bw.write (app.asXML());
-			bw.close();
+	private void createAppVersion(IContext context, Element app) throws IOException {
+		BufferedWriter bw = null;
+
+		try {
+			String targetName = app.attributeValue("name");
+			if (isInstalled(targetName, context)) {
+				String appVFile = context.getStringValue("BOSSSOFT_HOME") + File.separator + app.attributeValue("name")
+						+ File.separator + "version.xml";
+				if (!new File(appVFile).exists())
+					new File(appVFile).createNewFile();
+
+				bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(appVFile)));
+				bw.write(app.asXML());
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (bw != null)
+				bw.close();
 		}
 		
-	}  catch(Exception e){
-		e.printStackTrace();
-	}
-		
-	}
-	private void createProductVersion(IContext context, Element element) {
+	 }
+	private void createProductVersion(IContext context, Element element) throws IOException {
 		String productVFile=context.getStringValue("BOSSSOFT_HOME")+File.separator+context.getStringValue("PRODUCT_NAME")+"_info.xml";
 		Document document = DocumentHelper.createDocument();
 		  Element root = document.addElement("product");
@@ -149,16 +155,20 @@ public class SetVersion implements IAction{
 	    	 application.addElement("serverPort").addText(context.getStringValue("APP_SERVER_PORT"));
 		     applications.add(application);
 	     }
+	     
+	     XMLWriter xmlWriter=null;
 	    try{
 				OutputFormat format =OutputFormat.createPrettyPrint(); 
 				  format.setEncoding("utf-8");//设置编码格式  
 				  format.setNewLineAfterDeclaration(false);
-			    XMLWriter xmlWriter = new XMLWriter(new FileOutputStream(productVFile),format);
+			    xmlWriter = new XMLWriter(new FileOutputStream(productVFile),format);
 
 			     xmlWriter.write(document);
 			     xmlWriter.close();
 			}catch(Exception e){
 				e.printStackTrace();
+			}finally{
+				if(xmlWriter!=null) xmlWriter.close();
 			}
 	}
 	

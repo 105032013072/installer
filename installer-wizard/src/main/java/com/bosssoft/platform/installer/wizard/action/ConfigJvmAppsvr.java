@@ -76,7 +76,7 @@ public class ConfigJvmAppsvr implements IAction{
 	}
 
 
-	private void configweblogic(IContext context, Map params) {
+	private void configweblogic(IContext context, Map params) throws IOException {
 		if("true".equals(context.getStringValue("IS_WINDOWS"))){
 			config4windows(context,params);
 		}else{
@@ -86,11 +86,14 @@ public class ConfigJvmAppsvr implements IAction{
 	}
 
 
-	private void config4linux(IContext context, Map params) {
+	private void config4linux(IContext context, Map params) throws IOException {
+		
+		BufferedWriter bw =null;
+		BufferedReader br=null;
 		String file=context.getStringValue("AS_WL_DOMAIN_HOME")+"/bin"+"/setDomainEnv.sh";
 		StringBuilder result = new StringBuilder();
         try{
-            BufferedReader br = new BufferedReader(new FileReader(new File(file)));//构造一个BufferedReader类来读取文件
+            br = new BufferedReader(new FileReader(new File(file)));//构造一个BufferedReader类来读取文件
             String s = null;
             while((s = br.readLine())!=null){//使用readLine方法，一次读一行
                if(s.trim().startsWith("WLS_MEM_ARGS_64BIT")){
@@ -101,23 +104,27 @@ public class ConfigJvmAppsvr implements IAction{
             	   result.append(" -DBOSSSOFT_HOME=").append(context.getStringValue("BOSSSOFT_HOME")).append("\"");
                }else result.append(System.lineSeparator()+s);
             }
-            br.close(); 
             
-            BufferedWriter bw = new BufferedWriter (new OutputStreamWriter (new FileOutputStream(file)));
+             bw = new BufferedWriter (new OutputStreamWriter (new FileOutputStream(file)));
 			bw.write (result.toString());
-			bw.close();
         }catch(Exception e){
         	this.logger.error(e);
+        }finally{
+        	
+        	if(bw!=null) bw.close();
+        	if(br!=null) br.close();
         }
 		
 	}
 
 
-	private void config4windows(IContext context, Map params) {
+	private void config4windows(IContext context, Map params) throws IOException {
+		BufferedReader br=null;
+		BufferedWriter bw=null;
 		String file=context.getStringValue("AS_WL_DOMAIN_HOME")+"/bin"+"/setDomainEnv.cmd";
 		StringBuilder result = new StringBuilder();
         try{
-            BufferedReader br = new BufferedReader(new FileReader(new File(file)));//构造一个BufferedReader类来读取文件
+            br = new BufferedReader(new FileReader(new File(file)));//构造一个BufferedReader类来读取文件
             String s = null;
             while((s = br.readLine())!=null){//使用readLine方法，一次读一行
                if(s.trim().startsWith("set WLS_MEM_ARGS_64BIT")){
@@ -128,19 +135,20 @@ public class ConfigJvmAppsvr implements IAction{
             	   result.append(" -DBOSSSOFT_HOME=").append(context.getStringValue("BOSSSOFT_HOME"));
                }else result.append(System.lineSeparator()+s);
             }
-            br.close(); 
-            
-            BufferedWriter bw = new BufferedWriter (new OutputStreamWriter (new FileOutputStream(file)));
+            bw = new BufferedWriter (new OutputStreamWriter (new FileOutputStream(file)));
 			bw.write (result.toString());
-			bw.close();
         }catch(Exception e){
         	this.logger.error(e);
+        }finally{
+        	if(br!=null) br.close();
+        	if(bw!=null) bw.close();
         }
         
 	}
 
 
-	private void configTomcat(IContext context, Map params) {
+	private void configTomcat(IContext context, Map params) throws IOException {
+		BufferedWriter bw =null;
 		String file=null;
 		StringBuffer addcontext=new StringBuffer();
 		StringBuffer result=new StringBuffer();
@@ -165,11 +173,12 @@ public class ConfigJvmAppsvr implements IAction{
 			if(!result.toString().contains(addcontext))
 			   result.insert(inserIndex, addcontext);
 			
-			BufferedWriter bw = new BufferedWriter (new OutputStreamWriter (new FileOutputStream(file)));
+		    bw = new BufferedWriter (new OutputStreamWriter (new FileOutputStream(file)));
 			bw.write (result.toString());
-			bw.close();
 		}catch(Exception e){
 			this.logger.error(e);
+		}finally{
+			if(bw!=null) bw.close();
 		}
 	}
 
@@ -178,19 +187,20 @@ public class ConfigJvmAppsvr implements IAction{
 		
 	}
 
-    private String readSource(String sourceFile) {
-		
+    private String readSource(String sourceFile) throws IOException {
+    	 BufferedReader br=null;
 		StringBuilder result = new StringBuilder();
         try{
-            BufferedReader br = new BufferedReader(new FileReader(new File(sourceFile)));//构造一个BufferedReader类来读取文件
+            br = new BufferedReader(new FileReader(new File(sourceFile)));//构造一个BufferedReader类来读取文件
             String s = null;
             while((s = br.readLine())!=null){//使用readLine方法，一次读一行
                 result.append(System.lineSeparator()+s);
-            }
-            br.close();    
+            } 
         }catch(Exception e){
         	this.logger.error(e);
-        }
+        }finally {
+			if(br!=null) br.close();
+		}
         return result.toString();
 	}
 	

@@ -110,6 +110,7 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 		this.chkInitDB.setText(I18nUtil.getString("DBCONFIG.LABEL.INITDB"));
 		this.chkInitDB.setOpaque(false);
 		this.chkInitDB.setMargin(new Insets(0, 0, 0, 0));
+		this.chkInitDB.setSelected(true);
 		this.lblPort.setText(I18nUtil.getString("DBCONFIG.LABEL.PORT"));
 		this.lblUrl.setText(I18nUtil.getString("DBCONFIG.LABEL.URL"));
 		this.lblIP.setText(I18nUtil.getString("DBCONFIG.LABEL.IP"));
