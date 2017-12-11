@@ -3,10 +3,12 @@ package com.bosssoft.platform.installer.wizard.action;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -34,8 +36,9 @@ public class configJavaServer implements IAction{
 				if(!cf.exists()) continue;
 				String source=readSource(cf);
 				if(!source.contains(JavaPath)){
+					int insertLocation=getLocation(context,cf,source);
 					StringBuffer result=new StringBuffer(source);
-					result.insert(0, JavaPath);
+					result.insert(insertLocation, JavaPath);
 					bw = new BufferedWriter (new OutputStreamWriter (new FileOutputStream(file)));
 					bw.write (result.toString());
 					bw.close();
@@ -55,7 +58,19 @@ public class configJavaServer implements IAction{
 		
 	}
 
-	 private String readSource(File file) throws IOException {
+	 private int getLocation(IContext context, File file,String source) throws Exception {
+		 if("true".equals(context.getStringValue("IS_WINDOWS"))) return 0;
+		 else{
+			 BufferedReader br=new BufferedReader(new FileReader(file));
+			 String s = null;
+		     while((s = br.readLine())!=null){//使用readLine方法，一次读一行
+		          if(s.startsWith("#!")) break;
+		    }
+			 return source.indexOf(s)+s.length()+1;
+		 }
+	}
+
+	private String readSource(File file) throws IOException {
 		StringBuilder result = new StringBuilder();
 		BufferedReader br=null;
 	   try{
@@ -77,7 +92,12 @@ public class configJavaServer implements IAction{
 		StringBuffer javacontent=new StringBuffer();
 		String [] ens=params.get("javaEnvironments").toString().split(",");
 		for (String en : ens) {
-			javacontent.append("set "+en+"="+context.getStringValue(en)+System.getProperty("line.separator"));
+			if("true".equals(context.getStringValue("IS_WINDOWS"))){
+				javacontent.append("set "+en+"="+context.getStringValue(en)+System.getProperty("line.separator"));
+			}else{
+				javacontent.append(en+"="+context.getStringValue(en)+System.getProperty("line.separator"));
+			}
+			   
 		}
 		return javacontent.toString();
 	}
