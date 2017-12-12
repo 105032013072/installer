@@ -313,6 +313,7 @@ public class WLEditorPanel extends AbstractASEditorPanel implements ActionListen
 		properties.setProperty("AS_WL_TARGET_SERVER", this.cbTarget.getText());
 		properties.setProperty("AS_WL_USERNAME", this.txLoginName.getText());
 		properties.setProperty("AS_WL_PASSWORD", this.txPassword.getText());
+		properties.put("IS_APP_SERVER_INSTALL", false);
 		properties.put("APP_SERVER_DEPLOY_DIR", this.xfcDomainHome.getText()+File.separator+"autodeploy");
 		return properties;
 	}

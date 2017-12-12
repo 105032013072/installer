@@ -51,13 +51,13 @@ public class ConfigJvmAppsvr implements IAction{
 				String s=null;
 				while((s=br.readLine())!=null){
 					if(s.trim().startsWith("--JvmMs")){
-						result.append(System.lineSeparator()+"  --JvmMs 512 ^");
+						result.append(System.lineSeparator()+"  --JvmMs 1024 ^");
 					}else if(s.trim().startsWith("--JvmMx")){
 						result.append(System.lineSeparator()+"  --JvmMx 1024");
 					}else if(s.trim().startsWith("--JvmOptions")){
 						 int index=s.lastIndexOf("\"");
 						 StringBuffer buffer=new StringBuffer(s);
-					     buffer.insert(index, ";-DBOSSSOFT_HOME="+context.getStringValue("BOSSSOFT_HOME"));
+					     buffer.insert(index, ";-XX:PermSize=1024M;-XX:MaxPermSize=1024m;-DBOSSSOFT_HOME="+context.getStringValue("BOSSSOFT_HOME"));
 					     result.append(System.lineSeparator()+buffer.toString());
 					}else{
 						result.append(System.lineSeparator()+s);
@@ -158,14 +158,14 @@ public class ConfigJvmAppsvr implements IAction{
 			result=new StringBuffer(readSource(file));
 			addcontext.append("set ");
 			inserIndex=0;
-			addcontext.append("JAVA_OPTS=%JAVA_OPTS% -Xms512m -Xmx1024m");
+			addcontext.append("JAVA_OPTS=%JAVA_OPTS% -Xms1024m -Xmx1024m -XX:PermSize=1024M -XX:MaxPermSize=1024m");
 			addcontext.append(" -DBOSSSOFT_HOME=").append(context.getStringValue("BOSSSOFT_HOME"));
 		}else{
 			file=context.getStringValue("AS_TOMCAT_HOME")+"/bin/catalina.sh";
 			result=new StringBuffer(readSource(file));
 			inserIndex=result.indexOf("#!/bin/sh")+"#!/bin/sh".length()+1;
 			addcontext.append(System.lineSeparator());
-			addcontext.append("JAVA_OPTS=\"$JAVA_OPTS -Xms512m -Xmx1024m");
+			addcontext.append("JAVA_OPTS=\"$JAVA_OPTS -Xms1024m -Xmx1024m -XX:PermSize=1024M -XX:MaxPermSize=1024m");
 			addcontext.append(" -DBOSSSOFT_HOME=").append(context.getStringValue("BOSSSOFT_HOME")).append("\"").append(System.lineSeparator());
 		}
 		try{
