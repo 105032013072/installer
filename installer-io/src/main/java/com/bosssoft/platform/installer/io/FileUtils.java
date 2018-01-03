@@ -70,6 +70,14 @@ public class FileUtils {
 		DiskCheckOperation operation = new DiskCheckOperation(file);
 		return operation.getFreeSpace();
 	}
+	
+	public static boolean mkdir(File _file, boolean _isDir) {
+		File dir = _file;
+		if(!_isDir){
+			dir = _file.getParentFile();
+		}
+		return dir.mkdirs();
+	}
 
 	private static void excute(AbstractFileOperation operation, FileFilter filter, IFileOperationListener listener, boolean preserveFileDate) throws OperationException {
 		operation.setFilter(filter);

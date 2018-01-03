@@ -18,6 +18,7 @@ import java.util.Map;
 
 import org.dom4j.Attribute;
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
@@ -28,6 +29,7 @@ import com.bosssoft.platform.installer.core.IContext;
 import com.bosssoft.platform.installer.core.InstallException;
 import com.bosssoft.platform.installer.core.action.IAction;
 import com.bosssoft.platform.installer.core.option.ModuleDef;
+import com.bosssoft.platform.installer.io.FileUtils;
 import com.bosssoft.platform.installer.wizard.util.XmlUtil;
 
 
@@ -41,17 +43,22 @@ public class SetVersion implements IAction{
 	public void execute(IContext context, Map params) throws InstallException {
 		String fileName=params.get("versionFile").toString();
 		File versionFile=new File(fileName);
-		recordInsatllDir(versionFile,context);
+	  
+		//创建产品的版本信息文件
+		try{
+			createProductInfo(context);
+			if(versionFile.exists())  recordInsatllDir(versionFile,context);
+		}catch(Exception e){
+			throw new InstallException(e);
+		}
+		
 		
 	}
-	private void recordInsatllDir(File versionFile, IContext context) {
-		try {
+	private void recordInsatllDir(File versionFile, IContext context) throws Exception {
+		
 			SAXReader reader = new SAXReader();
 			Document document = reader.read(versionFile);
 			Element product= document.getRootElement();
-			//创建产品的版本信息文件
-			createProductVersion(context,product);
-			
 			Iterator<Element> it= product.elementIterator();
 			while(it.hasNext()){
 				Element app=it.next();
@@ -59,12 +66,8 @@ public class SetVersion implements IAction{
 				createAppVersion(context,app);
 				
 				//创建应用的升级记录文件
-				createAppUpgrade(context,app);
+				//createAppUpgrade(context,app);
 			}
-		} catch (Exception e) {
-			throw new InstallException("faild to recordInsatllDir",e);
-		}
-		
 	}
 	
 	private void createAppUpgrade(IContext context, Element app) throws Exception {
@@ -117,9 +120,11 @@ public class SetVersion implements IAction{
 			if (isInstalled(targetName, context)) {
 				String appVFile = context.getStringValue("BOSSSOFT_HOME") + File.separator + app.attributeValue("name")
 						+ File.separator + "version.xml";
-				if (!new File(appVFile).exists())
+				if (!new File(appVFile).exists()){
+					FileUtils.mkdir(new File(appVFile), false);
 					new File(appVFile).createNewFile();
-
+				}
+					
 				bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(appVFile)));
 				bw.write(app.asXML());
 			}
@@ -132,14 +137,15 @@ public class SetVersion implements IAction{
 		}
 		
 	 }
-	private void createProductVersion(IContext context, Element element) throws IOException {
-		String productVFile=context.getStringValue("BOSSSOFT_HOME")+File.separator+context.getStringValue("PRODUCT_NAME")+"_info.xml";
+	private void createProductInfo(IContext context) throws IOException {
+		String productVFile=context.getStringValue("BOSSSOFT_HOME")+File.separator+context.getStringValue("PRODUCT_NAME")+"_install.xml";
 		Document document = DocumentHelper.createDocument();
 		  Element root = document.addElement("product");
-		   List<Attribute> list=element.attributes();
+		   /*List<Attribute> list=element.attributes();
 		   for (Attribute attribute : list) {
 			 root.addElement(attribute.getQualifiedName()).addText(attribute.getValue());
-		 }
+		 }*/
+		 root.addElement("name").addText(context.getStringValue("PRODUCT_NAME"));
 		 root.addElement("installTime").addText(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
 		 root.addElement("installDir").addText(context.getStringValue("INSTALL_DIR"));
 		 //记录该产品的应用信息
