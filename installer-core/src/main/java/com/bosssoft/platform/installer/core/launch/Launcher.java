@@ -217,12 +217,12 @@ public class Launcher implements Constants {
 
 	private String configLog4j() {
 		String logPath = null;
-		String userHome = System.getProperty("user.home");
+		String workdir = System.getProperty("user.dir");
 		String logFileName = System.getProperty("install.logfile");
 		if ((logFileName == null) || (logFileName.trim().length() == 0))
 			logFileName = DEFAULT_LOGFILE;
-		userHome = userHome.replace('\\', '/');
-		File logfile = new File(userHome + "/" + logFileName);
+		workdir = workdir.replace('\\', '/');
+		File logfile = new File(workdir + "/" + logFileName);
 		if (logfile.exists())
 			logfile.delete();
 
@@ -236,7 +236,7 @@ public class Launcher implements Constants {
 			return null;
 		}
 
-		logPath = userHome + "/" + logFileName;
+		logPath = workdir+"/"+"log" + "/" + logFileName;
 		properties.setProperty("log4j.appender.InstallFile.File", logPath);
 
 		if (System.getProperty("install.debug", "false").equals("true")) {
