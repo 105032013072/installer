@@ -18,11 +18,11 @@ import com.bosssoft.platform.installer.core.InstallException;
 import com.bosssoft.platform.installer.core.action.IAction;
 
 /**
- * 为应用设置Java环境（eg:tomcat,zookeeper）
+ * 为应用设置环境（eg:tomcat,zookeeper）
  * @author huangxw
  *
  */
-public class configJavaServer implements IAction{
+public class configServerEvn implements IAction{
  
 	transient Logger logger = Logger.getLogger(getClass());
 	
@@ -90,7 +90,7 @@ public class configJavaServer implements IAction{
 
 	private String getJavaContent(IContext context, Map params) {
 		StringBuffer javacontent=new StringBuffer();
-		String [] ens=params.get("javaEnvironments").toString().split(",");
+		String [] ens=params.get("environments").toString().split(",");
 		for (String en : ens) {
 			if("true".equals(context.getStringValue("IS_WINDOWS"))){
 				javacontent.append("set "+en+"="+context.getStringValue(en)+System.getProperty("line.separator"));

@@ -17,7 +17,10 @@ public class InstallerFileManager {
 	private static String optionCompsDir = resourcesDir + "/option_comps";
 	private static String commonCompsDir = resourcesDir + "/common_comps";
 	private static String jdkDir = commonCompsDir + "/jdk";
-
+	private static String appOuterconfigDir=resourcesDir+File.separator+"outerConfig"+File.separator+"app";
+    private static String thirdOuterconfigDir=resourcesDir+File.separator+"outerConfig"+File.separator+"thirdparty";
+	
+	
 	private static String getInstallerHomePath() {
 		String path=null;
 		try {
@@ -81,4 +84,16 @@ public class InstallerFileManager {
 	public static File getImageFile(String fileName) {
 		return new File(getImageDir(), fileName);
 	}
+
+	public static String getAppOuterconfigDir() {
+		return appOuterconfigDir;
+	}
+
+	public static String getThirdOuterconfigDir() {
+		return thirdOuterconfigDir;
+	}
+
+	
+	
+     
 }

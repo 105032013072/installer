@@ -2,6 +2,10 @@ package com.bosssoft.platform.installer.io;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import com.bosssoft.platform.installer.io.listener.IFileOperationListener;
 import com.bosssoft.platform.installer.io.operation.exception.OperationException;
@@ -85,4 +89,35 @@ public class FileUtils {
 		operation.setPreserveFileDate(preserveFileDate);
 		operation.excute();
 	}
+	
+	
+	
+    public static List<File> listFiles(File dir, FileFilter filter) {
+        List<File> files = new ArrayList<File>();
+        if (!dir.exists() || dir.isFile()) {
+            return files;
+        } else {
+            listFiles(files, dir, filter);
+            return files;
+        }
+    }
+
+    private static void listFiles(List filesList, File dir, FileFilter filter) {
+        File files[] = dir.listFiles(filter);
+        List temp = Arrays.asList(files);
+        Collections.sort(temp);
+        filesList.addAll(temp);
+        File subDirs[] = dir.listFiles(directoryFileFilter());
+        for (int i = 0; i < subDirs.length; i++)
+            listFiles(filesList, subDirs[i], filter);
+
+    }
+    
+    private  static FileFilter directoryFileFilter() {
+        return new FileFilter() {
+            public boolean accept(File pathname) {
+                return pathname.isDirectory();
+            }
+        };
+    }
 }
