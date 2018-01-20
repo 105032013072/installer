@@ -22,6 +22,7 @@ public class RegisterServer implements IAction{
 	transient Logger logger = Logger.getLogger(getClass());
 	public void execute(IContext context, Map params) throws InstallException {
 		try{
+			String[] evns={"path=%SystemRoot%/system32;%SystemRoot%;%SystemRoot%;%path%"};
 			List<RegisterDef> list=RegisterDefHelper.getRegisterList(context);
 			Runtime runtime=Runtime.getRuntime();
 			//Process p=null;
@@ -31,7 +32,7 @@ public class RegisterServer implements IAction{
 				}
 				
 				String workPath=registerDef.getWorkDir();
-				Process p=runtime.exec("cmd /c "+registerDef.getRegisterCmd(), null, new File(workPath));
+				Process p=runtime.exec("cmd /c "+registerDef.getRegisterCmd(), evns, new File(workPath));
 				//输出操作结果
 				InputStream inputStream = p.getInputStream();
 		        List<String> read = read(inputStream, "UTF-8");

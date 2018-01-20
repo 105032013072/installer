@@ -78,4 +78,8 @@ public abstract class AbstractRunner
     }
     return nextStepID;
   }
+  
+  public Step getCurrentStep(){
+	  return currentStep;
+  }
 }

@@ -50,8 +50,11 @@ public class ZipOperation extends PackOperation {
 
 		checkCanceled();
 
+	
+		
 		ZipEntry zipEntry = new ZipEntry(path);
-		outputStream.putNextEntry(zipEntry);
+		
+		if(!"/".equals(path))  outputStream.putNextEntry(zipEntry);
 		if (src.isDirectory()) {
 			outputStream.closeEntry();
 			File[] children = src.listFiles();
