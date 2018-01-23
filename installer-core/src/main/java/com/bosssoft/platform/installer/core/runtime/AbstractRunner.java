@@ -82,4 +82,8 @@ public abstract class AbstractRunner
   public Step getCurrentStep(){
 	  return currentStep;
   }
+  
+  public InstallConfig getInstallConfig(){
+	  return this.installConfig;
+  }
 }
