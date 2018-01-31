@@ -53,7 +53,7 @@ public class ResourcePanel extends AbstractSetupPanel implements ActionListener,
 	
 	public ResourcePanel(){
 		try {
-			jbInit();
+			//jbInit();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -64,6 +64,7 @@ public class ResourcePanel extends AbstractSetupPanel implements ActionListener,
 		setLayout(null);
 		setOpaque(false);
 		resourceMap=ResourceDefHelper.getResourceMap();//加载需要安装的运行组件
+	
 	    /*int checkBoxy=168;
 	    int choosery=181;
 	    int labely=183;*/
@@ -153,6 +154,9 @@ public class ResourcePanel extends AbstractSetupPanel implements ActionListener,
 
 	@Override
 	public void beforeShow() {
+		jbInit();
+		
+		
 	   //显示默认的安装路径
 		for (Map.Entry<String,String> entry : fileChooserMap.entrySet()) {
 			Point chooserPoint=StrToLocation(entry.getValue());
@@ -160,6 +164,7 @@ public class ResourcePanel extends AbstractSetupPanel implements ActionListener,
 	        String homePath=resourceMap.get(entry.getKey()).getHome();
 	    	fileChooser.setText(homePath);
 		}
+		
 	}
 
 	@Override
@@ -267,11 +272,13 @@ public class ResourcePanel extends AbstractSetupPanel implements ActionListener,
 		Collection<String> values=params.values();
 		for (String path : values) {
 			if(path.contains("[home]")){
+				String pathes[]=path.split(";");
+				path=pathes[pathes.length-1];
 				String filePath=path.replace("[home]", home).trim();
-				if(filePath.indexOf(" ")>-1) filePath=filePath.substring(0, filePath.indexOf(" "));
+				/*if(filePath.indexOf(" ")>-1) filePath=filePath.substring(0, filePath.indexOf(" "));
 				if(filePath.startsWith("%")){
 					 filePath=filePath.substring(filePath.indexOf(";")+1, filePath.length());
-				}
+				}*/
 				if(!new File(filePath).exists()){
 					MainFrameController.showMessageDialog(appName+"安装目录不合法", I18nUtil.getString("DIALOG.TITLE.ERROR"), 0);
 		    	    return false;
@@ -322,6 +329,7 @@ public class ResourcePanel extends AbstractSetupPanel implements ActionListener,
 			resourceMap.put(appName, resourceDef);
 			getContext().setValue(appName+"_home",resourceDef.getHome());
 		}
+		
 		
 		getContext().setValue("RESOURCE_MAP", resourceMap);
 		getContext().setValue("INSATLL_SERVERS", installStr);

@@ -21,13 +21,11 @@ public class ResourceDefHelper {
 	private static Map<String,ResourceDef> resourceMap=null;
 	
 	public static Map<String,ResourceDef> getResourceMap(){
-		if(resourceMap==null){
 			try {
 				loadResource();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
 		return resourceMap;
 	}
 	

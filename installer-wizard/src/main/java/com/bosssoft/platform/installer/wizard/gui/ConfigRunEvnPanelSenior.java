@@ -26,6 +26,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Location;
 import org.dom4j.Document;
@@ -130,9 +131,13 @@ public class ConfigRunEvnPanelSenior extends AbstractSetupPanel implements Mouse
 	public void beforeNext() {
 		logger.info("config run environment");
 		//设置bosssoftHome
-		String dir = getContext().getStringValue("INSTALL_DIR")+File.separator+"BOSSSOFT_HOME";
-		getContext().setValue("BOSSSOFT_HOME", dir);
-		logger.info("set bosssoft_home: "+dir);
+		String bosssofHome = System.getProperty("BOSSSOFT_HOME");
+		if (StringUtils.isBlank(bosssofHome)) {
+			bosssofHome=getContext().getStringValue("INSTALL_DIR")+File.separator+"bosssoft_home";
+		}
+		
+		getContext().setValue("BOSSSOFT_HOME", bosssofHome);
+		logger.info("set bosssoft_home: "+bosssofHome);
 		this.resourcePanel.beforeNext();
 	}
 
