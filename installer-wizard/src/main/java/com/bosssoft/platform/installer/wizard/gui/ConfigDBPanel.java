@@ -34,7 +34,7 @@ public class ConfigDBPanel extends AbstractSetupPanel implements ActionListener 
 	private JLabel lblDB = new JLabel();
 	private JComboBox cbxDb = new JComboBox();
 
-	private JTextArea explain = new JTextArea();
+	protected JTextArea explain = new JTextArea();
 	
 	private AbstractDBEditorPanel dbEditorPanel = null;
 	private HashMap editorPanelMap = new HashMap();

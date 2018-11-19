@@ -139,7 +139,8 @@ public class InstallConfigLoader {
 			}
 			installConfig.putActions(actions.getID(), actions);
 		}
-
+      
+		
 		return installConfig;
 	}
 

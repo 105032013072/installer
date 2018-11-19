@@ -40,7 +40,7 @@ public abstract class AbstractDBEditorPanel extends JPanel implements IEditorPan
 	protected JLabel lblIP = new JLabel();
 	protected JLabel lblUrl = new JLabel();
 	protected JLabel lblPort = new JLabel();
-	protected JCheckBox chkInitDB = new JCheckBox();
+	public JCheckBox chkInitDB = new JCheckBox();
 	protected MultiLabel lblTabSpace = new MultiLabel(I18nUtil.getString("DBCONFIG.MSG.TABSPACE"), 4, 2, 3);
 	protected JTextField tfdSID = new JTextField();
 	protected JLabel lbPassword = new JLabel();

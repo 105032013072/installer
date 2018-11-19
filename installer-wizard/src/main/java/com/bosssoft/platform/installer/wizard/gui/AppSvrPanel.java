@@ -29,19 +29,19 @@ import com.bosssoft.platform.installer.wizard.gui.component.StepTitleLabel;
 public class AppSvrPanel extends AbstractSetupPanel implements ActionListener {
 	Logger logger = Logger.getLogger(getClass());
 
-	private StepTitleLabel line = new StepTitleLabel();
+	protected StepTitleLabel line = new StepTitleLabel();
 
-	private JTextArea introduction = new JTextArea();
+	protected JTextArea introduction = new JTextArea();
 
-	private JComboBox cbxAS = new JComboBox();
+	protected JComboBox cbxAS = new JComboBox();
 
-	private JCheckBox chkCluster = new JCheckBox();
+	protected JCheckBox chkCluster = new JCheckBox();
 
-	private AbstractASEditorPanel appsvrPanel = null;
+	protected AbstractASEditorPanel appsvrPanel = null;
 
-	private JLabel lblAppsvr = new JLabel();
+	protected JLabel lblAppsvr = new JLabel();
 
-	private HashMap editorPanelMap = new HashMap();
+	protected HashMap editorPanelMap = new HashMap();
 	
 	
 

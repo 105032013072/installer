@@ -51,10 +51,10 @@ public class SqlScriptRunner {
 				return "Not support this database " + databaseProductName;
 			}
 
-			StringBuffer messageResultBuf = new StringBuffer();
+			StringBuffer messageResultBuf = new StringBuffer();		              
 			String[] sqlScripts=context.getStringValue("DB_INIT_SQLSCRIPT").split(",");
 			for (String scriptFile : sqlScripts) {
-		       String scriptPath="file:"+File.separator+scriptFile;
+		       String scriptPath="file:"+scriptFile;
 				try {
 					runScript(script, connection, new URL(scriptPath), "UTF-8", messageResultBuf);
 				} catch (Throwable e) {
