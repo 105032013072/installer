@@ -3,6 +3,7 @@ package com.bosssoft.platform.installer.jee.server.impl.tomcat;
 import com.bosssoft.platform.installer.io.xml.XmlFile;
 import com.bosssoft.platform.installer.jee.JEEServerOperationException;
 import com.bosssoft.platform.installer.jee.server.AbstractJEEServer;
+import com.bosssoft.platform.installer.jee.server.DeployType;
 import com.bosssoft.platform.installer.jee.server.IApplicationModel;
 import com.bosssoft.platform.installer.jee.server.ITargetModel;
 
@@ -20,6 +21,7 @@ public class TomcatServerImpl extends AbstractJEEServer {
 	public static final String TOMCAT_HOME = "";
 	private String tomcatHome;
 	private TomcatHost[] hosts = null;
+	private DeployType deployType=DeployType.DIRECTORY;
 
 	public TomcatServerImpl(TomcatEnv env) throws IOException {
 		super(env);
@@ -29,6 +31,20 @@ public class TomcatServerImpl extends AbstractJEEServer {
 
 		init();
 	}
+	
+	public TomcatServerImpl(TomcatEnv env,DeployType deployType) throws IOException{
+		super(env);
+		if(deployType!=null){
+			this.deployType=deployType;
+		}
+		
+		this.tomcatHome = env.getTomcatHome();
+
+		setEnv(env);
+
+		init();
+	}
+	
 
 	public void deploy(String appName, File earwar, ITargetModel target, Properties properties) throws JEEServerOperationException {
 		String targetName = null;
@@ -89,7 +105,7 @@ public class TomcatServerImpl extends AbstractJEEServer {
 			List<TomcatHost> hostList = new ArrayList<TomcatHost>();
 			for (int i = 0; i < len; i++) {
 				Element element = (Element) nodeList.item(i);
-				TomcatHost host = new TomcatHost(this.tomcatHome, element);
+				TomcatHost host = new TomcatHost(this.tomcatHome, element,deployType);
 				hostList.add(host);
 			}
 			this.hosts =  hostList.toArray(new TomcatHost[hostList.size()]);

@@ -2,6 +2,7 @@ package com.bosssoft.platform.installer.jee.server.impl.tomcat;
 
 import com.bosssoft.platform.installer.io.FileUtils;
 import com.bosssoft.platform.installer.io.operation.exception.OperationException;
+import com.bosssoft.platform.installer.jee.server.DeployType;
 import com.bosssoft.platform.installer.jee.server.IApplicationModel;
 import com.bosssoft.platform.installer.jee.server.internal.TargetModelImpl;
 
@@ -17,11 +18,20 @@ class TomcatHost {
 	private File appBase;
 	private File configDir;
 	private String hostName;
+	private DeployType deployType=DeployType.DIRECTORY;
 
 	public TomcatHost(String tomcatHome, Element host) {
 		init(tomcatHome, host);
 	}
+	
+	public TomcatHost(String tomcatHome, Element host,DeployType deployType) {
+		if(deployType!=null){
+			this.deployType=deployType;
+		}
+		init(tomcatHome, host);
+	}
 
+	
 	private void init(String tomcatHome, Element host) {
 		String path = host.getAttribute("appBase");
 		File file = new File(path);
@@ -66,8 +76,14 @@ class TomcatHost {
 		try {
 			if (appFile.isDirectory()) {
 				FileUtils.copy(appFile, destAppDir, null, null);
-			} else
-				FileUtils.unzip(appFile, destAppDir, null, null);
+			} else{
+				if(DeployType.WAR.toString().equals(deployType.toString())){
+					FileUtils.copy(appFile, new File(dest,appFile.getName()), null, null);
+				}else{
+					FileUtils.unzip(appFile, destAppDir, null, null);
+				}
+			}
+				
 		} catch (OperationException e) {
 			String message = e.getMessage();
 			if ((StringUtils.isEmpty(message)) && (e.getCause() != null)) {
@@ -185,5 +201,9 @@ class TomcatHost {
 
 	public File getConfBaseDir() {
 		return this.configDir;
+	}
+
+	public DeployType getDeployType() {
+		return deployType;
 	}
 }
