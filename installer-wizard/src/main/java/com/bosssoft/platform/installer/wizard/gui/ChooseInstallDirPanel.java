@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.bosssoft.platform.installer.core.MainFrameController;
@@ -276,10 +277,21 @@ public class ChooseInstallDirPanel extends AbstractSetupPanel implements ActionL
 	}
 
 	public void initialize(String[] parameters) {
-		if (System.getProperty("os.name").toLowerCase().indexOf("window") >= 0)
-			this.tfdDir.setText(("C:\\" + InstallRuntime.INSTANCE.getContext().getStringValue("default.install.dir")).replace('/', '\\'));
-		else
-			this.tfdDir.setText(System.getProperty("user.home") + "/" + InstallRuntime.INSTANCE.getContext().getStringValue("default.install.dir"));
+	    String defaultDisk=InstallRuntime.INSTANCE.getContext().getStringValue("default.install.disk.dir");
+	    
+		if (System.getProperty("os.name").toLowerCase().indexOf("window") >= 0){
+		    if(StringUtils.isEmpty(defaultDisk)) {
+                defaultDisk="C:\\";
+            }
+            this.tfdDir.setText((defaultDisk + InstallRuntime.INSTANCE.getContext().getStringValue("default.install.dir")).replace('/', '\\'));
+		}else{
+		    if(StringUtils.isEmpty(defaultDisk)) {
+                defaultDisk=System.getProperty("user.home");
+            }
+		    
+		    this.tfdDir.setText(defaultDisk + "/" + InstallRuntime.INSTANCE.getContext().getStringValue("default.install.dir"));
+		}
+			
 	}
 
 	public void actionPerformed(ActionEvent ae) {
